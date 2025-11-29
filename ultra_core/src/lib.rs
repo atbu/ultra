@@ -9,6 +9,8 @@ const ROTOR_I_TURNOVER: char = 'Q';
 // const ROTOR_III_WIRING: &str = "BDFHJLCPRTXVZNYEIWGAKMUSQO";
 // const ROTOR_III_TURNOVER: char = 'V';
 
+const UKW_B_WIRING: &str = "YRUHQSLDPXNGOKMIEBFZCWVJAT";
+
 pub struct Rotor {
     wiring: [u8; 26],
     position: u8,
@@ -46,8 +48,27 @@ impl Rotor {
 
 type RotorSet = [Rotor; NUMBER_OF_ROTORS];
 
+pub struct Reflector {
+    wiring: [u8; 26]
+}
+
+impl Reflector {
+    fn new(wiring_string: &str) -> Self {
+        let mut wiring: [u8; 26] = [0; 26];
+
+        for (index, character) in wiring_string.chars().enumerate() {
+            wiring[index] = char_to_index(character);
+        }
+
+        Self {
+            wiring
+        }
+    }
+}
+
 pub struct EnigmaMachine {
-    rotor_set: RotorSet
+    rotor_set: RotorSet,
+    reflector: Option<Reflector>
 }
 
 impl EnigmaMachine {
@@ -74,6 +95,16 @@ impl EnigmaMachine {
         after_exit_offset
     }
 
+    fn map_through_reflector(&self, signal: u8) -> u8 {
+        // If we have a reflector, pass the signal through it.
+        // If we don't have a reflector, just let the signal pass through as is.
+        match &self.reflector {
+            Some(reflector) => reflector.wiring[signal as usize],
+            _ => signal,
+        }
+
+    }
+
     pub fn press_key(&mut self, signal: char) -> u8 {
         self.rotate_rotors();
         let signal: u8 = char_to_index(signal);
@@ -83,7 +114,7 @@ impl EnigmaMachine {
             signal = Self::map_through_rotor(signal, rotor);
         }
 
-        signal
+        self.map_through_reflector(signal)
     }
 }
 
@@ -111,7 +142,8 @@ mod tests {
         let mut machine: EnigmaMachine = EnigmaMachine {
             rotor_set: [
                 Rotor::new(ROTOR_I_WIRING, ROTOR_I_TURNOVER, START_POSITION)
-            ]
+            ],
+            reflector: None
         };
 
         let signal = machine.press_key('A');
