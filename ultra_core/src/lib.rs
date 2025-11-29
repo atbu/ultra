@@ -1,4 +1,13 @@
-const NUMBER_OF_ROTORS: usize = 3;
+const NUMBER_OF_ROTORS: usize = 1;
+
+const ROTOR_I_WIRING: &str = "EKMFLGDQVZNTOWYHXUSPAIBRCJ";
+const ROTOR_I_TURNOVER: char = 'Q';
+
+// const ROTOR_II_WIRING: &str = "AJDKSIRUXBLHWTMCQGZNPYFVOE";
+// const ROTOR_II_TURNOVER: char = 'E';
+
+// const ROTOR_III_WIRING: &str = "BDFHJLCPRTXVZNYEIWGAKMUSQO";
+// const ROTOR_III_TURNOVER: char = 'V';
 
 pub struct Rotor {
     wiring: [u8; 26],
@@ -38,10 +47,8 @@ impl Rotor {
 type RotorSet = [Rotor; NUMBER_OF_ROTORS];
 
 pub fn rotate_rotors(mut rotors: RotorSet) -> RotorSet {
-    let mut should_rotate = false;
+    let mut should_rotate = true;
     for rotor in &mut rotors {
-        println!("{should_rotate}");
-
         if should_rotate {
             rotor.rotate();
         }
@@ -58,18 +65,12 @@ pub fn rotate_rotors(mut rotors: RotorSet) -> RotorSet {
 
 pub fn press_key(signal: char, rotors: RotorSet) -> (u8, RotorSet) {
     let rotors = rotate_rotors(rotors);
-    let signal_index = char_to_index(signal);
+    let signal: u8 = char_to_index(signal);
 
-    let signal = map_through_rotor(
-        map_through_rotor(
-            map_through_rotor(
-                signal_index,
-                &rotors[0]
-            ),
-            &rotors[1]
-        ),
-        &rotors[2],
-    );
+    let mut signal: u8 = signal;
+    for rotor in &rotors {
+        signal = map_through_rotor(signal, rotor);
+    }
 
     (signal, rotors)
 }
@@ -101,18 +102,23 @@ mod tests {
 
     #[test]
     fn simple_transformation() {
-        let wiring_string = "EKMFLGDQVZNTOWYHXUSPAIBRCJ";
+        const START_POSITION: char = 'B';
 
-        let rotor_a = Rotor::new(wiring_string, 'Q', 'Q');
-        let rotor_b = Rotor::new(wiring_string, 'A', 'Q');
-        let rotor_c = Rotor::new(wiring_string, 'A', 'Q');
+        let rotor_i = Rotor::new(ROTOR_I_WIRING, START_POSITION, ROTOR_I_TURNOVER);
 
         // rotor at index 0 is rightmost, ascending order from right to left
-        let rotors: RotorSet = [rotor_a, rotor_b, rotor_c];
-        let (_, rotors) = press_key('A', rotors);
+        let rotors: RotorSet = [rotor_i];
 
-        assert_eq!(rotors[0].position, char_to_index('Q'));
-        assert_eq!(rotors[1].position, char_to_index('A') + 1);
-        assert_eq!(rotors[2].position, char_to_index('A'));
+        let (signal, rotors) = press_key('A', rotors);
+        assert_eq!(signal, char_to_index('K'));
+        assert_eq!(rotors[0].position, 2);
+
+        let (signal, rotors) = press_key('A', rotors);
+        assert_eq!(signal, char_to_index('C'));
+        assert_eq!(rotors[0].position, 3);
+
+        let (signal, rotors) = press_key('T', rotors);
+        assert_eq!(signal, char_to_index('N'));
+        assert_eq!(rotors[0].position, 4);
     }
 }
