@@ -44,6 +44,14 @@ impl Rotor {
 
         rotate_neighbour
     }
+
+    fn map_signal(&self, signal: u8) -> u8 {
+        let after_entrance_offset = (signal + self.position) % 26;
+        let after_lookup = self.wiring[after_entrance_offset as usize];
+        let after_exit_offset = (after_lookup - self.position) % 26;
+
+        after_exit_offset
+    }
 }
 
 type RotorSet = [Rotor; NUMBER_OF_ROTORS];
@@ -63,6 +71,10 @@ impl Reflector {
         Self {
             wiring
         }
+    }
+
+    fn map_signal(&self, signal: u8) -> u8 {
+        self.wiring[signal as usize]
     }
 }
 
@@ -87,34 +99,21 @@ impl EnigmaMachine {
         }
     }
 
-    fn map_through_rotor(signal: u8, rotor: &Rotor) -> u8 {
-        let after_entrance_offset = (signal + rotor.position) % 26;
-        let after_lookup = rotor.wiring[after_entrance_offset as usize];
-        let after_exit_offset = (after_lookup - rotor.position) % 26;
-
-        after_exit_offset
-    }
-
-    fn map_through_reflector(&self, signal: u8) -> u8 {
-        // If we have a reflector, pass the signal through it.
-        // If we don't have a reflector, just let the signal pass through as is.
-        match &self.reflector {
-            Some(reflector) => reflector.wiring[signal as usize],
-            _ => signal,
-        }
-
-    }
-
     pub fn press_key(&mut self, signal: char) -> u8 {
         self.rotate_rotors();
         let signal: u8 = char_to_index(signal);
 
         let mut signal: u8 = signal;
         for rotor in &self.rotor_set {
-            signal = Self::map_through_rotor(signal, rotor);
+            signal = rotor.map_signal(signal);
         }
 
-        self.map_through_reflector(signal)
+        // If we have a reflector, pass the signal through it.
+        // If we don't have a reflector, just let the signal pass through as is.
+        match &self.reflector {
+            Some(reflector) => reflector.map_signal(signal),
+            _ => signal,
+        }
     }
 }
 
