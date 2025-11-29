@@ -3,7 +3,7 @@ pub struct Rotor {
     position: u8
 }
 
-pub fn map_through_rotor(signal: u8, rotor: Rotor) -> u8 {
+pub fn map_through_rotor(signal: u8, rotor: &Rotor) -> u8 {
     let after_entrance_offset = (signal + rotor.position) % 26;
     let after_lookup = rotor.wiring[after_entrance_offset as usize];
     let after_exit_offset = (after_lookup - rotor.position) % 26;
@@ -40,6 +40,6 @@ mod tests {
             wiring,
             position: 1
         };
-        assert_eq!(map_through_rotor(char_to_index('A'), rotor), char_to_index('J'));
+        assert_eq!(map_through_rotor(char_to_index('A'), &rotor), char_to_index('J'));
     }
 }
