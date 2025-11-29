@@ -7,6 +7,20 @@ pub struct Rotor {
 }
 
 impl Rotor {
+    fn new(wiring_string: &str, position: char, notch: char) -> Self {
+        let mut wiring: [u8; 26] = [0; 26];
+
+        for (index, character) in wiring_string.chars().enumerate() {
+            wiring[index] = char_to_index(character);
+        }
+
+        Self {
+            wiring,
+            position: char_to_index(position),
+            notch: char_to_index(notch)
+        }
+    }
+
     fn rotate(&mut self) -> bool {
         let mut rotate_neighbour: bool = false;
 
@@ -42,13 +56,14 @@ pub fn rotate_rotors(mut rotors: RotorSet) -> RotorSet {
     rotors
 }
 
-pub fn press_key(signal: u8, rotors: RotorSet) -> (u8, RotorSet) {
+pub fn press_key(signal: char, rotors: RotorSet) -> (u8, RotorSet) {
     let rotors = rotate_rotors(rotors);
+    let signal_index = char_to_index(signal);
 
     let signal = map_through_rotor(
         map_through_rotor(
             map_through_rotor(
-                signal,
+                signal_index,
                 &rotors[0]
             ),
             &rotors[1]
@@ -86,39 +101,18 @@ mod tests {
 
     #[test]
     fn simple_transformation() {
-        let wiring_string: &str = "EKMFLGDQVZNTOWYHXUSPAIBRCJ";
-        let mut wiring: [u8; 26] = [0; 26];
-        for (index, character) in wiring_string.chars().enumerate() {
-            wiring[index] = char_to_index(character);
-        }
+        let wiring_string = "EKMFLGDQVZNTOWYHXUSPAIBRCJ";
 
-        let q = char_to_index('Q');
-        let a = char_to_index('A');
-
-        let rotor_a: Rotor = Rotor {
-            wiring,
-            position: q,
-            notch: q
-        };
-
-        let rotor_b: Rotor = Rotor {
-            wiring,
-            position: a,
-            notch: q
-        };
-
-        let rotor_c: Rotor = Rotor {
-            wiring,
-            position: a,
-            notch: q
-        };
+        let rotor_a = Rotor::new(wiring_string, 'Q', 'Q');
+        let rotor_b = Rotor::new(wiring_string, 'A', 'Q');
+        let rotor_c = Rotor::new(wiring_string, 'A', 'Q');
 
         // rotor at index 0 is rightmost, ascending order from right to left
         let rotors: RotorSet = [rotor_a, rotor_b, rotor_c];
-        let (_, rotors) = press_key(char_to_index('A'), rotors);
+        let (_, rotors) = press_key('A', rotors);
 
-        assert_eq!(rotors[0].position, q);
-        assert_eq!(rotors[1].position, a + 1);
-        assert_eq!(rotors[2].position, a);
+        assert_eq!(rotors[0].position, char_to_index('Q'));
+        assert_eq!(rotors[1].position, char_to_index('A') + 1);
+        assert_eq!(rotors[2].position, char_to_index('A'));
     }
 }
