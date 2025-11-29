@@ -59,7 +59,8 @@ mod tests {
 
         let mut rotor: Rotor = Rotor {
             wiring,
-            position: 0
+            position: char_to_index('A'),
+            notch: char_to_index('Q')
         };
         assert_eq!(press_key(char_to_index('A'), &mut rotor), char_to_index('J'));
     }
