@@ -1,11 +1,21 @@
 pub struct Rotor {
     wiring: [u8; 26],
-    position: u8
+    position: u8,
+    notch: u8
 }
 
 impl Rotor {
-    fn rotate(&mut self) {
+    fn rotate(&mut self) -> bool {
+        let mut rotate_neighbour: bool = false;
+
+        // We are at the notch, so tell the neighbouring rotor to rotate too
+        if self.position == self.notch {
+            rotate_neighbour = true;
+        }
+
         self.position = (self.position + 1) % 26;
+
+        rotate_neighbour
     }
 }
 
