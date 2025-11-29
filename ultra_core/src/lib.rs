@@ -1,3 +1,5 @@
+const NUMBER_OF_ROTORS: usize = 3;
+
 pub struct Rotor {
     wiring: [u8; 26],
     position: u8,
@@ -19,7 +21,9 @@ impl Rotor {
     }
 }
 
-pub fn rotate_rotors(mut rotors: [Rotor; 3]) -> [Rotor; 3] {
+type RotorSet = [Rotor; NUMBER_OF_ROTORS];
+
+pub fn rotate_rotors(mut rotors: RotorSet) -> RotorSet {
     let mut should_rotate = false;
     for rotor in &mut rotors {
         println!("{should_rotate}");
@@ -38,7 +42,7 @@ pub fn rotate_rotors(mut rotors: [Rotor; 3]) -> [Rotor; 3] {
     rotors
 }
 
-pub fn press_key(signal: u8, rotors: [Rotor; 3]) -> (u8, [Rotor; 3]) {
+pub fn press_key(signal: u8, rotors: RotorSet) -> (u8, RotorSet) {
     let rotors = rotate_rotors(rotors);
 
     let signal = map_through_rotor(
@@ -110,7 +114,7 @@ mod tests {
         };
 
         // rotor at index 0 is rightmost, ascending order from right to left
-        let rotors: [Rotor; 3] = [rotor_a, rotor_b, rotor_c];
+        let rotors: RotorSet = [rotor_a, rotor_b, rotor_c];
         let (_, rotors) = press_key(char_to_index('A'), rotors);
 
         assert_eq!(rotors[0].position, q);
