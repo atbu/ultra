@@ -19,24 +19,40 @@ impl Rotor {
     }
 }
 
-pub fn press_key(signal: u8, rotors: &mut [&mut Rotor; 3]) -> u8 {
-    // There has to be a better way of doing this
-    if rotors[0].rotate() {
-        if rotors[1].rotate() {
-            rotors[2].rotate();
+pub fn rotate_rotors(mut rotors: [Rotor; 3]) -> [Rotor; 3] {
+    let mut should_rotate = false;
+    for rotor in &mut rotors {
+        println!("{should_rotate}");
+
+        if should_rotate {
+            rotor.rotate();
+        }
+
+        if rotor.position == rotor.notch {
+            should_rotate = true;
+        } else {
+            should_rotate = false;
         }
     }
 
-    map_through_rotor(
+    rotors
+}
+
+pub fn press_key(signal: u8, rotors: [Rotor; 3]) -> (u8, [Rotor; 3]) {
+    let rotors = rotate_rotors(rotors);
+
+    let signal = map_through_rotor(
         map_through_rotor(
             map_through_rotor(
                 signal,
-                rotors[0]
+                &rotors[0]
             ),
-            rotors[1]
+            &rotors[1]
         ),
-        rotors[2],
-    )
+        &rotors[2],
+    );
+
+    (signal, rotors)
 }
 
 pub fn map_through_rotor(signal: u8, rotor: &Rotor) -> u8 {
@@ -72,32 +88,33 @@ mod tests {
             wiring[index] = char_to_index(character);
         }
 
-        let mut rotor_a: Rotor = Rotor {
+        let q = char_to_index('Q');
+        let a = char_to_index('A');
+
+        let rotor_a: Rotor = Rotor {
             wiring,
-            position: char_to_index('Q'),
-            notch: char_to_index('Q')
+            position: q,
+            notch: q
         };
 
-        let mut rotor_b: Rotor = Rotor {
+        let rotor_b: Rotor = Rotor {
             wiring,
-            position: char_to_index('A'),
-            notch: char_to_index('Q')
+            position: a,
+            notch: q
         };
 
-        let mut rotor_c: Rotor = Rotor {
+        let rotor_c: Rotor = Rotor {
             wiring,
-            position: char_to_index('A'),
-            notch: char_to_index('Q')
+            position: a,
+            notch: q
         };
 
-        let mut rotors: [&mut Rotor; 3] = [&mut rotor_a, &mut rotor_b, &mut rotor_c];
+        // rotor at index 0 is rightmost, ascending order from right to left
+        let rotors: [Rotor; 3] = [rotor_a, rotor_b, rotor_c];
+        let (_, rotors) = press_key(char_to_index('A'), rotors);
 
-        assert_eq!(rotors[0].position, char_to_index('Q'));
-        assert_eq!(rotors[1].position, char_to_index('A'));
-        assert_eq!(rotors[2].position, char_to_index('A'));
-        press_key(char_to_index('A'), &mut rotors);
-        assert_eq!(rotors[0].position, char_to_index('R'));
-        assert_eq!(rotors[1].position, char_to_index('B'));
-        assert_eq!(rotors[2].position, char_to_index('A'));
+        assert_eq!(rotors[0].position, q);
+        assert_eq!(rotors[1].position, a + 1);
+        assert_eq!(rotors[2].position, a);
     }
 }
