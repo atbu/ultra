@@ -3,6 +3,17 @@ pub struct Rotor {
     position: u8
 }
 
+impl Rotor {
+    fn rotate(&mut self) {
+        self.position = (self.position + 1) % 26;
+    }
+}
+
+pub fn press_key(signal: u8, rotor: &mut Rotor) -> u8 {
+    rotor.rotate();
+    map_through_rotor(signal, rotor)
+}
+
 pub fn map_through_rotor(signal: u8, rotor: &Rotor) -> u8 {
     let after_entrance_offset = (signal + rotor.position) % 26;
     let after_lookup = rotor.wiring[after_entrance_offset as usize];
@@ -36,10 +47,10 @@ mod tests {
             wiring[index] = char_to_index(character);
         }
 
-        let rotor: Rotor = Rotor {
+        let mut rotor: Rotor = Rotor {
             wiring,
-            position: 1
+            position: 0
         };
-        assert_eq!(map_through_rotor(char_to_index('A'), &rotor), char_to_index('J'));
+        assert_eq!(press_key(char_to_index('A'), &mut rotor), char_to_index('J'));
     }
 }
