@@ -19,9 +19,24 @@ impl Rotor {
     }
 }
 
-pub fn press_key(signal: u8, rotor: &mut Rotor) -> u8 {
-    rotor.rotate();
-    map_through_rotor(signal, rotor)
+pub fn press_key(signal: u8, rotors: &mut [&mut Rotor; 3]) -> u8 {
+    // There has to be a better way of doing this
+    if rotors[0].rotate() {
+        if rotors[1].rotate() {
+            rotors[2].rotate();
+        }
+    }
+
+    map_through_rotor(
+        map_through_rotor(
+            map_through_rotor(
+                signal,
+                rotors[0]
+            ),
+            rotors[1]
+        ),
+        rotors[2],
+    )
 }
 
 pub fn map_through_rotor(signal: u8, rotor: &Rotor) -> u8 {
@@ -57,11 +72,32 @@ mod tests {
             wiring[index] = char_to_index(character);
         }
 
-        let mut rotor: Rotor = Rotor {
+        let mut rotor_a: Rotor = Rotor {
+            wiring,
+            position: char_to_index('Q'),
+            notch: char_to_index('Q')
+        };
+
+        let mut rotor_b: Rotor = Rotor {
             wiring,
             position: char_to_index('A'),
             notch: char_to_index('Q')
         };
-        assert_eq!(press_key(char_to_index('A'), &mut rotor), char_to_index('J'));
+
+        let mut rotor_c: Rotor = Rotor {
+            wiring,
+            position: char_to_index('A'),
+            notch: char_to_index('Q')
+        };
+
+        let mut rotors: [&mut Rotor; 3] = [&mut rotor_a, &mut rotor_b, &mut rotor_c];
+
+        assert_eq!(rotors[0].position, char_to_index('Q'));
+        assert_eq!(rotors[1].position, char_to_index('A'));
+        assert_eq!(rotors[2].position, char_to_index('A'));
+        press_key(char_to_index('A'), &mut rotors);
+        assert_eq!(rotors[0].position, char_to_index('R'));
+        assert_eq!(rotors[1].position, char_to_index('B'));
+        assert_eq!(rotors[2].position, char_to_index('A'));
     }
 }
