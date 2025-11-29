@@ -16,7 +16,7 @@ pub struct Rotor {
 }
 
 impl Rotor {
-    fn new(wiring_string: &str, position: char, notch: char) -> Self {
+    fn new(wiring_string: &str, notch: char, position: char) -> Self {
         let mut wiring: [u8; 26] = [0; 26];
 
         for (index, character) in wiring_string.chars().enumerate() {
@@ -46,41 +46,45 @@ impl Rotor {
 
 type RotorSet = [Rotor; NUMBER_OF_ROTORS];
 
-pub fn rotate_rotors(mut rotors: RotorSet) -> RotorSet {
-    let mut should_rotate = true;
-    for rotor in &mut rotors {
-        if should_rotate {
-            rotor.rotate();
-        }
+pub struct EnigmaMachine {
+    rotor_set: RotorSet
+}
 
-        if rotor.position == rotor.notch {
-            should_rotate = true;
-        } else {
-            should_rotate = false;
+impl EnigmaMachine {
+    fn rotate_rotors(&mut self) {
+        let mut should_rotate = true;
+        for rotor in &mut self.rotor_set {
+            if should_rotate {
+                rotor.rotate();
+            }
+
+            if rotor.position == rotor.notch {
+                should_rotate = true;
+            } else {
+                should_rotate = false;
+            }
         }
     }
 
-    rotors
-}
+    fn map_through_rotor(signal: u8, rotor: &Rotor) -> u8 {
+        let after_entrance_offset = (signal + rotor.position) % 26;
+        let after_lookup = rotor.wiring[after_entrance_offset as usize];
+        let after_exit_offset = (after_lookup - rotor.position) % 26;
 
-pub fn press_key(signal: char, rotors: RotorSet) -> (u8, RotorSet) {
-    let rotors = rotate_rotors(rotors);
-    let signal: u8 = char_to_index(signal);
-
-    let mut signal: u8 = signal;
-    for rotor in &rotors {
-        signal = map_through_rotor(signal, rotor);
+        after_exit_offset
     }
 
-    (signal, rotors)
-}
+    pub fn press_key(&mut self, signal: char) -> u8 {
+        self.rotate_rotors();
+        let signal: u8 = char_to_index(signal);
 
-pub fn map_through_rotor(signal: u8, rotor: &Rotor) -> u8 {
-    let after_entrance_offset = (signal + rotor.position) % 26;
-    let after_lookup = rotor.wiring[after_entrance_offset as usize];
-    let after_exit_offset = (after_lookup - rotor.position) % 26;
+        let mut signal: u8 = signal;
+        for rotor in &self.rotor_set {
+            signal = Self::map_through_rotor(signal, rotor);
+        }
 
-    after_exit_offset
+        signal
+    }
 }
 
 /// Converts a character to an integer index, where 'A' equals 0, 'B' equals 1, ..., 'Z' equals 25.
@@ -104,21 +108,22 @@ mod tests {
     fn simple_transformation() {
         const START_POSITION: char = 'B';
 
-        let rotor_i = Rotor::new(ROTOR_I_WIRING, START_POSITION, ROTOR_I_TURNOVER);
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            rotor_set: [
+                Rotor::new(ROTOR_I_WIRING, ROTOR_I_TURNOVER, START_POSITION)
+            ]
+        };
 
-        // rotor at index 0 is rightmost, ascending order from right to left
-        let rotors: RotorSet = [rotor_i];
-
-        let (signal, rotors) = press_key('A', rotors);
+        let signal = machine.press_key('A');
         assert_eq!(signal, char_to_index('K'));
-        assert_eq!(rotors[0].position, 2);
+        assert_eq!(machine.rotor_set[0].position, 2);
 
-        let (signal, rotors) = press_key('A', rotors);
+        let signal = machine.press_key('A');
         assert_eq!(signal, char_to_index('C'));
-        assert_eq!(rotors[0].position, 3);
+        assert_eq!(machine.rotor_set[0].position, 3);
 
-        let (signal, rotors) = press_key('T', rotors);
+        let signal = machine.press_key('T');
         assert_eq!(signal, char_to_index('N'));
-        assert_eq!(rotors[0].position, 4);
+        assert_eq!(machine.rotor_set[0].position, 4);
     }
 }
