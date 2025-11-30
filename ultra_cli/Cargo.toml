@@ -5,3 +5,5 @@ edition = "2024"
 
 [dependencies]
 ultra_core = { path = "../ultra_core" }
+serde = { version = "1.0.228", features = ["derive"] }
+toml = { version = "0.9.8" }
