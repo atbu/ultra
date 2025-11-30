@@ -7,3 +7,4 @@ edition = "2024"
 ultra_core = { path = "../ultra_core" }
 serde = { version = "1.0.228", features = ["derive"] }
 toml = { version = "0.9.8" }
+clap = { version = "4.5.53", features = ["derive"] }
