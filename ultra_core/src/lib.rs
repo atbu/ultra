@@ -36,7 +36,8 @@ pub struct EnigmaMachine {
     left_rotor: Rotor,
     middle_rotor: Rotor,
     right_rotor: Rotor,
-    reflector: Reflector
+    reflector: Reflector,
+    plugboard: Option<Plugboard>
 }
 
 impl EnigmaMachine {
@@ -52,6 +53,13 @@ impl EnigmaMachine {
         signal = self.left_rotor.map_signal_inverse(signal);
         signal = self.middle_rotor.map_signal_inverse(signal);
         signal = self.right_rotor.map_signal_inverse(signal);
+
+        // If we have a plugboard, map the signal through it.
+        // If not, let the signal pass through as it is.
+        let signal = match &self.plugboard {
+            Some(plugboard) => plugboard.map_signal(signal),
+            None => signal
+        };
 
         index_to_char(signal)
     }
@@ -164,6 +172,59 @@ impl Reflector {
     }
 }
 
+struct Plugboard {
+    configuration: Vec<(u8, u8)>
+}
+
+impl Plugboard {
+    /// This constructor returns an Option<Self> because there is the potential that if the string
+    /// is empty, or if
+    fn new(plugboard_string: &str) -> Option<Self> {
+        // If the plugboard string is empty, we can return None as we have no plugboard.
+        if plugboard_string.is_empty() {
+            return None
+        }
+
+        // Make sure that plugboard string has an even number of characters, we don't want a plug
+        // that is disconnected on one end.
+        if plugboard_string.len() % 2 != 0 {
+            let invalid_connection = plugboard_string.as_bytes()[plugboard_string.len() - 1];
+            panic!("Plugboard configuration has an invalid connection: {} is not connected to any other character.", invalid_connection);
+        }
+
+        let mut plugboard_pairs: Vec<(u8, u8)> = Vec::new();
+        for i in (0..(plugboard_string.len() - 1)).step_by(2) {
+            let x = char_to_index(plugboard_string.as_bytes()[i] as char);
+            let y = char_to_index(plugboard_string.as_bytes()[i + 1] as char);
+
+            plugboard_pairs.push((x, y));
+        }
+
+        Some(
+            Self {
+                configuration: plugboard_pairs
+            }
+        )
+    }
+
+    /// Maps a signal through the plugboard.
+    /// Iterate through all plugboard pairs. If there is a pair containing the signal,
+    /// return the value on the other end of the pair.
+    /// If there is no plugboard pair containing this signal, just return the signal itself
+    /// as it is not paired with any other signal.
+    fn map_signal(&self, signal: u8) -> u8 {
+        for i in &self.configuration {
+            return if i.0 == signal {
+                i.1
+            } else {
+                i.0
+            }
+        }
+
+        signal
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -174,7 +235,8 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I),
             middle_rotor: Rotor::new(RotorConfiguration::II),
             right_rotor: Rotor::new(RotorConfiguration::III),
-            reflector: Reflector::new(ReflectorConfiguration::B)
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            plugboard: None
         };
 
         assert_eq!(machine.press_key('A'), 'B');
