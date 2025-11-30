@@ -53,8 +53,6 @@ impl EnigmaMachine {
         signal = self.middle_rotor.map_signal_inverse(signal);
         signal = self.right_rotor.map_signal_inverse(signal);
 
-        println!("Entered as {}, leaving as {}", key, index_to_char(signal));
-
         index_to_char(signal)
     }
 
@@ -84,15 +82,31 @@ struct Rotor {
     position: u8
 }
 
+enum RotorConfiguration {
+    I,
+    II,
+    III,
+    IV,
+    V
+}
+
 impl Rotor {
-    fn new(wiring_string: &str, notch: char, position: char) -> Self {
+    fn new(rotor_configuration: RotorConfiguration) -> Self {
+        let (wiring_string, notch) = match rotor_configuration {
+            RotorConfiguration::I => ("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q'),
+            RotorConfiguration::II => ("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E'),
+            RotorConfiguration::III => ("BDFHJLCPRTXVZNYEIWGAKMUSQO", 'V'),
+            RotorConfiguration::IV => ("ESOVPZJAYQUIRHXLNFTGKDCMWB", 'J'),
+            RotorConfiguration::V => ("VZBRGITYUPSDNHLXAWMJQOFECK", 'Z')
+        };
+
         let wiring: [u8; 26] = wiring_string_to_array(wiring_string);
 
         Self {
             wiring,
             inverse_wiring: inverse_wiring_array(wiring),
             notch: char_to_index(notch),
-            position: char_to_index(position)
+            position: char_to_index('A')
         }
     }
 
@@ -122,12 +136,24 @@ impl Rotor {
     }
 }
 
+enum ReflectorConfiguration {
+    A,
+    B,
+    C
+}
+
 struct Reflector {
     wiring: [u8; 26]
 }
 
 impl Reflector {
-    fn new(wiring_string: &str) -> Self {
+    fn new(reflector_configuration: ReflectorConfiguration) -> Self {
+        let wiring_string = match reflector_configuration {
+            ReflectorConfiguration::A => "EJMZALYXVBWFCRQUONTSPIKHGD",
+            ReflectorConfiguration::B => "YRUHQSLDPXNGOKMIEBFZCWVJAT",
+            ReflectorConfiguration::C => "FVPJIAOYEDRZXWGCTKUQSBNMHL"
+        };
+
         Self {
             wiring: wiring_string_to_array(wiring_string)
         }
@@ -142,20 +168,13 @@ impl Reflector {
 mod tests {
     use super::*;
 
-    // /// Makes checking the rotor configuration easier.
-    // fn check_rotor_configuration(machine: &EnigmaMachine, left_rotor: char, middle_rotor: char, right_rotor: char) -> bool {
-    //     machine.left_rotor.position == char_to_index(left_rotor)
-    //     && machine.middle_rotor.position == char_to_index(middle_rotor)
-    //     && machine.right_rotor.position == char_to_index(right_rotor)
-    // }
-
     #[test]
     fn test_rotor_stepping() {
         let mut machine: EnigmaMachine = EnigmaMachine {
-            left_rotor: Rotor::new("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q', 'A'),
-            middle_rotor: Rotor::new("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E', 'A'),
-            right_rotor: Rotor::new("BDFHJLCPRTXVZNYEIWGAKMUSQO", 'V', 'A'),
-            reflector: Reflector::new("YRUHQSLDPXNGOKMIEBFZCWVJAT")
+            left_rotor: Rotor::new(RotorConfiguration::I),
+            middle_rotor: Rotor::new(RotorConfiguration::II),
+            right_rotor: Rotor::new(RotorConfiguration::III),
+            reflector: Reflector::new(ReflectorConfiguration::B)
         };
 
         assert_eq!(machine.press_key('A'), 'B');
