@@ -96,6 +96,18 @@ impl EnigmaMachine {
         self.middle_rotor.position = char_to_index(middle_rotor);
         self.right_rotor.position = char_to_index(right_rotor);
     }
+
+    fn process(&mut self, message: &str) -> String {
+        // We know that the output won't be any longer/shorter than the input as letters are
+        // translated 1:1.
+        let mut output = String::with_capacity(message.len());
+
+        for character in message.chars() {
+            output.push(self.press_key(character));
+        }
+
+        output
+    }
 }
 
 struct Rotor {
@@ -258,11 +270,7 @@ mod tests {
             plugboard: None
         };
 
-        assert_eq!(machine.press_key('A'), 'B');
-        assert_eq!(machine.press_key('A'), 'D');
-        assert_eq!(machine.press_key('A'), 'Z');
-        assert_eq!(machine.press_key('A'), 'G');
-        assert_eq!(machine.press_key('A'), 'O');
+        assert_eq!(machine.process("AAAAA"), "BDZGO");
     }
 
     #[test]
@@ -275,21 +283,11 @@ mod tests {
             plugboard: None
         };
 
-        assert_eq!(machine.press_key('E'), 'Q');
-        assert_eq!(machine.press_key('N'), 'M');
-        assert_eq!(machine.press_key('I'), 'J');
-        assert_eq!(machine.press_key('G'), 'I');
-        assert_eq!(machine.press_key('M'), 'D');
-        assert_eq!(machine.press_key('A'), 'O');
+        assert_eq!(machine.process("ENIGMA"), "QMJIDO");
 
         machine.update_rotor_positions('M', 'C', 'K');
 
-        assert_eq!(machine.press_key('Q'), 'E');
-        assert_eq!(machine.press_key('M'), 'N');
-        assert_eq!(machine.press_key('J'), 'I');
-        assert_eq!(machine.press_key('I'), 'G');
-        assert_eq!(machine.press_key('D'), 'M');
-        assert_eq!(machine.press_key('O'), 'A');
+        assert_eq!(machine.process("QMJIDO"), "ENIGMA");
     }
 
     #[test]
@@ -302,19 +300,11 @@ mod tests {
             plugboard: None
         };
 
-        assert_eq!(machine.press_key('A'), 'J');
-        assert_eq!(machine.press_key('A'), 'W');
-        assert_eq!(machine.press_key('A'), 'Z');
-        assert_eq!(machine.press_key('A'), 'B');
-        assert_eq!(machine.press_key('A'), 'J');
+        assert_eq!(machine.process("AAAAA"), "JWZBJ");
 
         machine.update_rotor_positions('K', 'D', 'U');
 
-        assert_eq!(machine.press_key('A'), 'Y');
-        assert_eq!(machine.press_key('A'), 'W');
-        assert_eq!(machine.press_key('A'), 'D');
-        assert_eq!(machine.press_key('A'), 'V');
-        assert_eq!(machine.press_key('A'), 'Q');
+        assert_eq!(machine.process("AAAAA"), "YWDVQ");
     }
 
     #[test]
@@ -327,11 +317,7 @@ mod tests {
             plugboard: None
         };
 
-        assert_eq!(machine.press_key('A'), 'E');
-        assert_eq!(machine.press_key('A'), 'Q');
-        assert_eq!(machine.press_key('A'), 'I');
-        assert_eq!(machine.press_key('A'), 'B');
-        assert_eq!(machine.press_key('A'), 'M');
+        assert_eq!(machine.process("AAAAA"), "EQIBM");
     }
 
     #[test]
@@ -344,11 +330,7 @@ mod tests {
             plugboard: Plugboard::new("ABCDEFGH")
         };
 
-        assert_eq!(machine.press_key('A'), 'U');
-        assert_eq!(machine.press_key('A'), 'Z');
-        assert_eq!(machine.press_key('A'), 'Y');
-        assert_eq!(machine.press_key('A'), 'R');
-        assert_eq!(machine.press_key('A'), 'Q');
+        assert_eq!(machine.process("AAAAA"), "UZYRQ");
     }
 
     fn test_case_6_full_integration() {
@@ -360,36 +342,7 @@ mod tests {
             plugboard: Plugboard::new("BQCRDIEJKWMTOSPXUZGH")
         };
 
-        assert_eq!(machine.press_key('E'), 'G');
-        assert_eq!(machine.press_key('V'), 'L');
-        assert_eq!(machine.press_key('E'), 'A');
-        assert_eq!(machine.press_key('R'), 'V');
-        assert_eq!(machine.press_key('Y'), 'K');
-        assert_eq!(machine.press_key('T'), 'O');
-        assert_eq!(machine.press_key('H'), 'Q');
-        assert_eq!(machine.press_key('I'), 'E');
-        assert_eq!(machine.press_key('N'), 'V');
-        assert_eq!(machine.press_key('G'), 'M');
-        assert_eq!(machine.press_key('I'), 'B');
-        assert_eq!(machine.press_key('S'), 'R');
-        assert_eq!(machine.press_key('G'), 'H');
-        assert_eq!(machine.press_key('O'), 'U');
-        assert_eq!(machine.press_key('I'), 'S');
-        assert_eq!(machine.press_key('N'), 'V');
-        assert_eq!(machine.press_key('G'), 'Y');
-        assert_eq!(machine.press_key('E'), 'D');
-        assert_eq!(machine.press_key('X'), 'E');
-        assert_eq!(machine.press_key('T'), 'S');
-        assert_eq!(machine.press_key('R'), 'C');
-        assert_eq!(machine.press_key('E'), 'D');
-        assert_eq!(machine.press_key('M'), 'R');
-        assert_eq!(machine.press_key('E'), 'G');
-        assert_eq!(machine.press_key('L'), 'Y');
-        assert_eq!(machine.press_key('Y'), 'P');
-        assert_eq!(machine.press_key('W'), 'J');
-        assert_eq!(machine.press_key('E'), 'D');
-        assert_eq!(machine.press_key('L'), 'N');
-        assert_eq!(machine.press_key('L'), 'P');
+        assert_eq!(machine.process("EVERYTHINGISGOINGEXTREMELYWELL"), "GLAVKOQEVMBRHUSVYDESCDRGYPJDNP");
     }
 
     #[test]
