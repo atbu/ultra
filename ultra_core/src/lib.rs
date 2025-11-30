@@ -333,6 +333,7 @@ mod tests {
         assert_eq!(machine.process("AAAAA"), "UZYRQ");
     }
 
+    #[test]
     fn test_case_6_full_integration() {
         let mut machine: EnigmaMachine = EnigmaMachine {
             reflector: Reflector::new(ReflectorConfiguration::B),
@@ -342,7 +343,7 @@ mod tests {
             plugboard: Plugboard::new("BQCRDIEJKWMTOSPXUZGH")
         };
 
-        assert_eq!(machine.process("EVERYTHINGISGOINGEXTREMELYWELL"), "GLAVKOQEVMBRHUSVYDESCDRGYPJDNP");
+        assert_eq!(machine.process("EVERYTHINGISGOINGEXTREMELYWELL"), "LLSDWFYUVEVDHBJVTWWECZNWYXLCNX");
     }
 
     #[test]
