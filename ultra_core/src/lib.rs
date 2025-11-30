@@ -182,11 +182,8 @@ impl Plugboard {
     fn new(plugboard_string: &str) -> Option<Self> {
         // If the plugboard string is empty, we can return None as we have no plugboard.
         if plugboard_string.is_empty() {
-            println!("Plugboard string is empty so we have no plugboard");
             return None
         }
-
-        println!("We have a plugboard");
 
         // Make sure that plugboard string has an even number of characters, we don't want a plug
         // that is disconnected on one end.
@@ -195,8 +192,6 @@ impl Plugboard {
             panic!("Plugboard configuration has an invalid connection: {} is not connected to any other character.", invalid_connection);
         }
 
-        println!("Plugboard string has an even number of characters");
-
         let mut plugboard_pairs: Vec<(u8, u8)> = Vec::new();
         for i in (0..(plugboard_string.len() - 1)).step_by(2) {
             let x = char_to_index(plugboard_string.as_bytes()[i] as char);
@@ -204,8 +199,6 @@ impl Plugboard {
 
             plugboard_pairs.push((x, y));
         }
-
-        println!("Plugboard pairs: {:?}", plugboard_pairs);
 
         Some(
             Self {
@@ -220,23 +213,15 @@ impl Plugboard {
     /// If there is no plugboard pair containing this signal, just return the signal itself
     /// as it is not paired with any other signal.
     fn map_signal(&self, signal: u8) -> u8 {
-        println!("signal enters as {}", index_to_char(signal));
-
-        println!("{:?}", &self.configuration);
-
         for i in &self.configuration {
             if i.0 == signal {
-                println!("Found as first item of tuple: {}, so returning other side {}", index_to_char(signal), index_to_char(i.1));
                 return i.1
             }
 
             if i.1 == signal {
-                println!("Found as second item of tuple: {}, so returning other side {}", index_to_char(signal), index_to_char(i.0));
                 return i.0
             }
         }
-
-        println!("signal leaves with no change as {}", index_to_char(signal));
 
         signal
     }
