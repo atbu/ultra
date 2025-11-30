@@ -43,23 +43,23 @@ pub struct EnigmaMachine {
 impl EnigmaMachine {
     /// Takes the key that was pressed by the user and returns the character that would light up.
     fn press_key(&mut self, key: char) -> char {
+        let mut signal: u8 = char_to_index(key);
+
+        signal = self.map_through_plugboard(signal);
+
         self.rotate_rotors();
 
-        let mut signal: u8 = char_to_index(key);
         signal = self.right_rotor.map_signal(signal);
         signal = self.middle_rotor.map_signal(signal);
         signal = self.left_rotor.map_signal(signal);
+
         signal = self.reflector.map_signal(signal);
+
         signal = self.left_rotor.map_signal_inverse(signal);
         signal = self.middle_rotor.map_signal_inverse(signal);
         signal = self.right_rotor.map_signal_inverse(signal);
 
-        // If we have a plugboard, map the signal through it.
-        // If not, let the signal pass through as it is.
-        let signal = match &self.plugboard {
-            Some(plugboard) => plugboard.map_signal(signal),
-            None => signal
-        };
+        signal = self.map_through_plugboard(signal);
 
         index_to_char(signal)
     }
@@ -79,6 +79,15 @@ impl EnigmaMachine {
 
         if left_rotor_should_rotate {
             self.left_rotor.rotate();
+        }
+    }
+
+    fn map_through_plugboard(&self, signal: u8) -> u8 {
+        // If we have a plugboard, map the signal through it.
+        // If not, let the signal pass through as it is.
+        match &self.plugboard {
+            Some(plugboard) => plugboard.map_signal(signal),
+            None => signal
         }
     }
 }
@@ -128,7 +137,7 @@ impl Rotor {
     /// Maps a signal through a single Rotor, taking into account the rotation of the rotor.
     /// https://en.wikipedia.org/wiki/Enigma_rotor_details#Rotor_offset
     fn map_signal(&self, signal: u8) -> u8 {
-        let after_shift_in = (signal + self.position) % 26;
+        let after_shift_in = (signal + self.position + 26) % 26;
         let mapped_value = self.wiring[after_shift_in as usize];
         let after_shift_out = (mapped_value + 26 - self.position) % 26;
 
@@ -136,7 +145,7 @@ impl Rotor {
     }
 
     fn map_signal_inverse(&self, signal: u8) -> u8 {
-        let after_shift_in = (signal + self.position) % 26;
+        let after_shift_in = (signal + self.position + 26) % 26;
         let mapped_value = self.inverse_wiring[after_shift_in as usize];
         let after_shift_out = (mapped_value + 26 - self.position) % 26;
 
@@ -234,20 +243,172 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_rotor_stepping() {
+    fn test_case_1_sanity_check() {
         let mut machine: EnigmaMachine = EnigmaMachine {
             left_rotor: Rotor::new(RotorConfiguration::I),
             middle_rotor: Rotor::new(RotorConfiguration::II),
             right_rotor: Rotor::new(RotorConfiguration::III),
             reflector: Reflector::new(ReflectorConfiguration::B),
-            plugboard: Plugboard::new("BL")
+            plugboard: None
         };
 
-        assert_eq!(machine.press_key('A'), 'L');
+        assert_eq!(machine.press_key('A'), 'B');
         assert_eq!(machine.press_key('A'), 'D');
         assert_eq!(machine.press_key('A'), 'Z');
         assert_eq!(machine.press_key('A'), 'G');
         assert_eq!(machine.press_key('A'), 'O');
+    }
+
+    #[test]
+    fn test_case_2_reciprocity() {
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            left_rotor: Rotor::new(RotorConfiguration::I),
+            middle_rotor: Rotor::new(RotorConfiguration::II),
+            right_rotor: Rotor::new(RotorConfiguration::III),
+            plugboard: None
+        };
+
+        machine.left_rotor.position = char_to_index('M');
+        machine.middle_rotor.position = char_to_index('C');
+        machine.right_rotor.position = char_to_index('K');
+
+        assert_eq!(machine.press_key('E'), 'Q');
+        assert_eq!(machine.press_key('N'), 'M');
+        assert_eq!(machine.press_key('I'), 'J');
+        assert_eq!(machine.press_key('G'), 'I');
+        assert_eq!(machine.press_key('M'), 'D');
+        assert_eq!(machine.press_key('A'), 'O');
+
+        machine.left_rotor.position = char_to_index('M');
+        machine.middle_rotor.position = char_to_index('C');
+        machine.right_rotor.position = char_to_index('K');
+
+        assert_eq!(machine.press_key('Q'), 'E');
+        assert_eq!(machine.press_key('M'), 'N');
+        assert_eq!(machine.press_key('J'), 'I');
+        assert_eq!(machine.press_key('I'), 'G');
+        assert_eq!(machine.press_key('D'), 'M');
+        assert_eq!(machine.press_key('O'), 'A');
+    }
+
+    #[test]
+    fn test_case_3_normal_turnover() {
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            left_rotor: Rotor::new(RotorConfiguration::I),
+            middle_rotor: Rotor::new(RotorConfiguration::II),
+            right_rotor: Rotor::new(RotorConfiguration::III),
+            plugboard: None
+        };
+
+        machine.left_rotor.position = char_to_index('K');
+        machine.middle_rotor.position = char_to_index('D');
+        machine.right_rotor.position = char_to_index('O');
+
+        assert_eq!(machine.press_key('A'), 'J');
+        assert_eq!(machine.press_key('A'), 'W');
+        assert_eq!(machine.press_key('A'), 'Z');
+        assert_eq!(machine.press_key('A'), 'B');
+        assert_eq!(machine.press_key('A'), 'J');
+
+
+        machine.left_rotor.position = char_to_index('K');
+        machine.middle_rotor.position = char_to_index('D');
+        machine.right_rotor.position = char_to_index('U');
+
+        assert_eq!(machine.press_key('A'), 'Y');
+        assert_eq!(machine.press_key('A'), 'W');
+        assert_eq!(machine.press_key('A'), 'D');
+        assert_eq!(machine.press_key('A'), 'V');
+        assert_eq!(machine.press_key('A'), 'Q');
+    }
+
+    #[test]
+    fn test_case_4_double_step() {
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            left_rotor: Rotor::new(RotorConfiguration::I),
+            middle_rotor: Rotor::new(RotorConfiguration::II),
+            right_rotor: Rotor::new(RotorConfiguration::III),
+            plugboard: None
+        };
+
+        machine.left_rotor.position = char_to_index('A');
+        machine.middle_rotor.position = char_to_index('D');
+        machine.right_rotor.position = char_to_index('U');
+
+        assert_eq!(machine.press_key('A'), 'E');
+        assert_eq!(machine.press_key('A'), 'Q');
+        assert_eq!(machine.press_key('A'), 'I');
+        assert_eq!(machine.press_key('A'), 'B');
+        assert_eq!(machine.press_key('A'), 'M');
+    }
+
+    #[test]
+    fn test_case_5_plugboard() {
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            left_rotor: Rotor::new(RotorConfiguration::I),
+            middle_rotor: Rotor::new(RotorConfiguration::II),
+            right_rotor: Rotor::new(RotorConfiguration::III),
+            plugboard: Plugboard::new("ABCDEFGH")
+        };
+
+        machine.left_rotor.position = char_to_index('Z');
+        machine.middle_rotor.position = char_to_index('Z');
+        machine.right_rotor.position = char_to_index('Z');
+
+        assert_eq!(machine.press_key('A'), 'U');
+        assert_eq!(machine.press_key('A'), 'Z');
+        assert_eq!(machine.press_key('A'), 'Y');
+        assert_eq!(machine.press_key('A'), 'R');
+        assert_eq!(machine.press_key('A'), 'Q');
+    }
+
+    fn test_case_6_full_integration() {
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            left_rotor: Rotor::new(RotorConfiguration::II),
+            middle_rotor: Rotor::new(RotorConfiguration::IV),
+            right_rotor: Rotor::new(RotorConfiguration::V),
+            plugboard: Plugboard::new("BQCRDIEJKWMTOSPXUZGH")
+        };
+
+        machine.left_rotor.position = char_to_index('A');
+        machine.middle_rotor.position = char_to_index('B');
+        machine.right_rotor.position = char_to_index('L');
+
+        assert_eq!(machine.press_key('E'), 'G');
+        assert_eq!(machine.press_key('V'), 'L');
+        assert_eq!(machine.press_key('E'), 'A');
+        assert_eq!(machine.press_key('R'), 'V');
+        assert_eq!(machine.press_key('Y'), 'K');
+        assert_eq!(machine.press_key('T'), 'O');
+        assert_eq!(machine.press_key('H'), 'Q');
+        assert_eq!(machine.press_key('I'), 'E');
+        assert_eq!(machine.press_key('N'), 'V');
+        assert_eq!(machine.press_key('G'), 'M');
+        assert_eq!(machine.press_key('I'), 'B');
+        assert_eq!(machine.press_key('S'), 'R');
+        assert_eq!(machine.press_key('G'), 'H');
+        assert_eq!(machine.press_key('O'), 'U');
+        assert_eq!(machine.press_key('I'), 'S');
+        assert_eq!(machine.press_key('N'), 'V');
+        assert_eq!(machine.press_key('G'), 'Y');
+        assert_eq!(machine.press_key('E'), 'D');
+        assert_eq!(machine.press_key('X'), 'E');
+        assert_eq!(machine.press_key('T'), 'S');
+        assert_eq!(machine.press_key('R'), 'C');
+        assert_eq!(machine.press_key('E'), 'D');
+        assert_eq!(machine.press_key('M'), 'R');
+        assert_eq!(machine.press_key('E'), 'G');
+        assert_eq!(machine.press_key('L'), 'Y');
+        assert_eq!(machine.press_key('Y'), 'P');
+        assert_eq!(machine.press_key('W'), 'J');
+        assert_eq!(machine.press_key('E'), 'D');
+        assert_eq!(machine.press_key('L'), 'N');
+        assert_eq!(machine.press_key('L'), 'P');
     }
 
     #[test]
