@@ -383,13 +383,13 @@ mod tests {
     fn ring_test_case_3() {
         let mut machine: EnigmaMachine = EnigmaMachine {
             reflector: Reflector::new(ReflectorConfiguration::B),
-            left_rotor: Rotor::new(RotorConfiguration::I, 'Q', 'G'),
-            middle_rotor: Rotor::new(RotorConfiguration::II, 'E', 'M'),
-            right_rotor: Rotor::new(RotorConfiguration::III, 'V', 'Y'),
-            plugboard: None
+            left_rotor: Rotor::new(RotorConfiguration::I, 'G', 'R'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'U', 'T'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'M', 'M'),
+            plugboard: Plugboard::new("AKSORILP")
         };
 
-        assert_eq!(machine.process("POTATO"), "QTHYRQ");
+        assert_eq!(machine.process("HELLOWORLD"), "CDKSEVMKXJ");
     }
 
     #[test]
