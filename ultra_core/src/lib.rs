@@ -343,7 +343,10 @@ mod tests {
             plugboard: Plugboard::new("BQCRDIEJKWMTOSPXUZGH")
         };
 
-        assert_eq!(machine.process("EVERYTHINGISGOINGEXTREMELYWELL"), "LLSDWFYUVEVDHBJVTWWECZNWYXLCNX");
+        assert_eq!(
+            machine.process("EVERYTHINGISGOINGEXTREMELYWELL"),
+            "LLSDWFYUVEVDHBJVTWWECZNWYXLCNX"
+        );
     }
 
     #[test]
