@@ -178,7 +178,9 @@ struct Plugboard {
 
 impl Plugboard {
     /// This constructor returns an Option<Self> because there is the potential that if the string
-    /// is empty, or if
+    /// is empty, we will consider the machine to have no plugboard.
+    /// The plugboard configuration is passed as a string like "ABCDEFGH" where A will be paired
+    /// with B, C will be paired with D, E will be paired with F and G will be paired with H.
     fn new(plugboard_string: &str) -> Option<Self> {
         // If the plugboard string is empty, we can return None as we have no plugboard.
         if plugboard_string.is_empty() {
