@@ -33,11 +33,11 @@ pub fn inverse_wiring_array(wiring_array: [u8; 26]) -> [u8; 26] {
 }
 
 pub struct EnigmaMachine {
-    left_rotor: Rotor,
-    middle_rotor: Rotor,
-    right_rotor: Rotor,
-    reflector: Reflector,
-    plugboard: Option<Plugboard>
+    pub left_rotor: Rotor,
+    pub middle_rotor: Rotor,
+    pub right_rotor: Rotor,
+    pub reflector: Reflector,
+    pub plugboard: Option<Plugboard>
 }
 
 impl EnigmaMachine {
@@ -91,13 +91,15 @@ impl EnigmaMachine {
         }
     }
 
+    // Used in tests but shows as dead code, so override compiler warnings.
+    #[allow(dead_code)]
     fn update_rotor_positions(&mut self, left_rotor: char, middle_rotor: char, right_rotor: char) {
         self.left_rotor.position = char_to_index(left_rotor);
         self.middle_rotor.position = char_to_index(middle_rotor);
         self.right_rotor.position = char_to_index(right_rotor);
     }
 
-    fn process(&mut self, message: &str) -> String {
+    pub fn process(&mut self, message: &str) -> String {
         // We know that the output won't be any longer/shorter than the input as letters are
         // translated 1:1.
         let mut output = String::with_capacity(message.len());
@@ -110,7 +112,7 @@ impl EnigmaMachine {
     }
 }
 
-struct Rotor {
+pub struct Rotor {
     wiring: [u8; 26],
     inverse_wiring: [u8; 26],
     notch: u8,
@@ -118,7 +120,7 @@ struct Rotor {
     ring_setting: u8
 }
 
-enum RotorConfiguration {
+pub enum RotorConfiguration {
     I,
     II,
     III,
@@ -127,7 +129,7 @@ enum RotorConfiguration {
 }
 
 impl Rotor {
-    fn new(rotor_configuration: RotorConfiguration, starting_position: char, ring_setting: char) -> Self {
+    pub fn new(rotor_configuration: RotorConfiguration, starting_position: char, ring_setting: char) -> Self {
         let (wiring_string, notch) = match rotor_configuration {
             RotorConfiguration::I => ("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q'),
             RotorConfiguration::II => ("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E'),
@@ -175,18 +177,18 @@ impl Rotor {
     }
 }
 
-enum ReflectorConfiguration {
+pub enum ReflectorConfiguration {
     A,
     B,
     C
 }
 
-struct Reflector {
+pub struct Reflector {
     wiring: [u8; 26]
 }
 
 impl Reflector {
-    fn new(reflector_configuration: ReflectorConfiguration) -> Self {
+    pub fn new(reflector_configuration: ReflectorConfiguration) -> Self {
         let wiring_string = match reflector_configuration {
             ReflectorConfiguration::A => "EJMZALYXVBWFCRQUONTSPIKHGD",
             ReflectorConfiguration::B => "YRUHQSLDPXNGOKMIEBFZCWVJAT",
@@ -203,7 +205,7 @@ impl Reflector {
     }
 }
 
-struct Plugboard {
+pub struct Plugboard {
     configuration: Vec<(u8, u8)>
 }
 
@@ -212,7 +214,7 @@ impl Plugboard {
     /// is empty, we will consider the machine to have no plugboard.
     /// The plugboard configuration is passed as a string like "ABCDEFGH" where A will be paired
     /// with B, C will be paired with D, E will be paired with F and G will be paired with H.
-    fn new(plugboard_string: &str) -> Option<Self> {
+    pub fn new(plugboard_string: &str) -> Option<Self> {
         // If the plugboard string is empty, we can return None as we have no plugboard.
         if plugboard_string.is_empty() {
             return None
