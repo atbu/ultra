@@ -1,8 +1,8 @@
-use std::env;
-use std::ptr::read;
-use ultra_core::{EnigmaMachine, Rotor, RotorConfiguration, Reflector, ReflectorConfiguration, Plugboard, char_to_index};
 use serde::Deserialize;
+use std::path::PathBuf;
+use clap::Parser;
 use toml;
+use ultra_core::{EnigmaMachine, Plugboard, Reflector, ReflectorConfiguration, Rotor, RotorConfiguration};
 
 #[derive(Deserialize)]
 struct MachineConfig {
@@ -35,14 +35,24 @@ struct PlugboardConfig {
     configuration: String
 }
 
+#[derive(Parser)]
+struct CLI {
+    #[arg(short, long, value_name = "INPUT")]
+    input: Option<String>,
+
+    #[arg(short, long, value_name = "CONFIG")]
+    config: Option<PathBuf>
+}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let cli = CLI::parse();
 
-    // args[0] is the path to the binary.
-    // args[1] is the first argument after the binary itself.
-    let plaintext: &str = &args[1];
+    let config_path = match cli.config.as_deref() {
+        Some(config_path) => config_path,
+        None => panic!("Machine configuration file not found.")
+    };
 
-    let machine = read_machine_configuration("MachineConfiguration.toml");
+    let machine = read_machine_configuration(config_path.to_str().unwrap());
 
     let mut plugboard_pairs: Vec<(char, char)> = Vec::new();
 
@@ -152,7 +162,9 @@ fn main() {
         plugboard: Plugboard::new(&machine.plugboard.configuration)
     };
 
-    println!("{}", enigma_machine.process(plaintext));
+    if let Some(input) = cli.input.as_deref() {
+        println!("{}", enigma_machine.process(input));
+    }
 }
 
 fn read_machine_configuration(path: &str) -> MachineConfig {
