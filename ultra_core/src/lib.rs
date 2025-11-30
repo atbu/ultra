@@ -114,7 +114,8 @@ struct Rotor {
     wiring: [u8; 26],
     inverse_wiring: [u8; 26],
     notch: u8,
-    position: u8
+    position: u8,
+    ring_setting: u8
 }
 
 enum RotorConfiguration {
@@ -126,7 +127,7 @@ enum RotorConfiguration {
 }
 
 impl Rotor {
-    fn new(rotor_configuration: RotorConfiguration, starting_position: char) -> Self {
+    fn new(rotor_configuration: RotorConfiguration, starting_position: char, ring_setting: char) -> Self {
         let (wiring_string, notch) = match rotor_configuration {
             RotorConfiguration::I => ("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q'),
             RotorConfiguration::II => ("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E'),
@@ -141,7 +142,8 @@ impl Rotor {
             wiring,
             inverse_wiring: inverse_wiring_array(wiring),
             notch: char_to_index(notch),
-            position: char_to_index(starting_position)
+            position: char_to_index(starting_position),
+            ring_setting: char_to_index(ring_setting)
         }
     }
 
@@ -155,19 +157,21 @@ impl Rotor {
     /// Maps a signal through a single Rotor, taking into account the rotation of the rotor.
     /// https://en.wikipedia.org/wiki/Enigma_rotor_details#Rotor_offset
     fn map_signal(&self, signal: u8) -> u8 {
-        let after_shift_in = (signal + self.position + 26) % 26;
-        let mapped_value = self.wiring[after_shift_in as usize];
-        let after_shift_out = (mapped_value + 26 - self.position) % 26;
+        let delta = ((self.position + 26) - self.ring_setting) % 26;
+        let contact_in = (signal + delta) % 26;
+        let contact_out = self.wiring[contact_in as usize];
+        let signal_out = ((contact_out + 26) - delta) % 26;
 
-        after_shift_out
+        signal_out
     }
 
     fn map_signal_inverse(&self, signal: u8) -> u8 {
-        let after_shift_in = (signal + self.position + 26) % 26;
-        let mapped_value = self.inverse_wiring[after_shift_in as usize];
-        let after_shift_out = (mapped_value + 26 - self.position) % 26;
+        let delta = ((self.position + 26) - self.ring_setting) % 26;
+        let contact_in = (signal + delta) % 26;
+        let contact_out = self.inverse_wiring[contact_in as usize];
+        let signal_out = ((contact_out + 26) - delta) % 26;
 
-        after_shift_out
+        signal_out
     }
 }
 
@@ -263,9 +267,9 @@ mod tests {
     #[test]
     fn test_case_1_sanity_check() {
         let mut machine: EnigmaMachine = EnigmaMachine {
-            left_rotor: Rotor::new(RotorConfiguration::I, 'A'),
-            middle_rotor: Rotor::new(RotorConfiguration::II, 'A'),
-            right_rotor: Rotor::new(RotorConfiguration::III, 'A'),
+            left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'A'),
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: None
         };
@@ -277,9 +281,9 @@ mod tests {
     fn test_case_2_reciprocity() {
         let mut machine: EnigmaMachine = EnigmaMachine {
             reflector: Reflector::new(ReflectorConfiguration::B),
-            left_rotor: Rotor::new(RotorConfiguration::I, 'M'),
-            middle_rotor: Rotor::new(RotorConfiguration::II, 'C'),
-            right_rotor: Rotor::new(RotorConfiguration::III, 'K'),
+            left_rotor: Rotor::new(RotorConfiguration::I, 'M', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'C', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'K', 'A'),
             plugboard: None
         };
 
@@ -294,9 +298,9 @@ mod tests {
     fn test_case_3_normal_turnover() {
         let mut machine: EnigmaMachine = EnigmaMachine {
             reflector: Reflector::new(ReflectorConfiguration::B),
-            left_rotor: Rotor::new(RotorConfiguration::I, 'K'),
-            middle_rotor: Rotor::new(RotorConfiguration::II, 'D'),
-            right_rotor: Rotor::new(RotorConfiguration::III, 'O'),
+            left_rotor: Rotor::new(RotorConfiguration::I, 'K', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'O', 'A'),
             plugboard: None
         };
 
@@ -311,9 +315,9 @@ mod tests {
     fn test_case_4_double_step() {
         let mut machine: EnigmaMachine = EnigmaMachine {
             reflector: Reflector::new(ReflectorConfiguration::B),
-            left_rotor: Rotor::new(RotorConfiguration::I, 'A'),
-            middle_rotor: Rotor::new(RotorConfiguration::II, 'D'),
-            right_rotor: Rotor::new(RotorConfiguration::III, 'U'),
+            left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'U', 'A'),
             plugboard: None
         };
 
@@ -324,9 +328,9 @@ mod tests {
     fn test_case_5_plugboard() {
         let mut machine: EnigmaMachine = EnigmaMachine {
             reflector: Reflector::new(ReflectorConfiguration::B),
-            left_rotor: Rotor::new(RotorConfiguration::I, 'Z'),
-            middle_rotor: Rotor::new(RotorConfiguration::II, 'Z'),
-            right_rotor: Rotor::new(RotorConfiguration::III, 'Z'),
+            left_rotor: Rotor::new(RotorConfiguration::I, 'Z', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'Z', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'Z', 'A'),
             plugboard: Plugboard::new("ABCDEFGH")
         };
 
@@ -337,9 +341,9 @@ mod tests {
     fn test_case_6_full_integration() {
         let mut machine: EnigmaMachine = EnigmaMachine {
             reflector: Reflector::new(ReflectorConfiguration::B),
-            left_rotor: Rotor::new(RotorConfiguration::II, 'A'),
-            middle_rotor: Rotor::new(RotorConfiguration::IV, 'B'),
-            right_rotor: Rotor::new(RotorConfiguration::V, 'L'),
+            left_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::IV, 'B', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::V, 'L', 'A'),
             plugboard: Plugboard::new("BQCRDIEJKWMTOSPXUZGH")
         };
 
@@ -347,6 +351,45 @@ mod tests {
             machine.process("EVERYTHINGISGOINGEXTREMELYWELL"),
             "LLSDWFYUVEVDHBJVTWWECZNWYXLCNX"
         );
+    }
+
+    #[test]
+    fn ring_test_case_1() {
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'B'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'B'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'B'),
+            plugboard: None
+        };
+
+        assert_eq!(machine.process("AAAAA"), "EWTYX");
+    }
+
+    #[test]
+    fn ring_test_case_2() {
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            left_rotor: Rotor::new(RotorConfiguration::I, 'K', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'T', 'B'),
+            plugboard: None
+        };
+
+        assert_eq!(machine.process("AAAA"), "JTIN");
+    }
+
+    #[test]
+    fn ring_test_case_3() {
+        let mut machine: EnigmaMachine = EnigmaMachine {
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            left_rotor: Rotor::new(RotorConfiguration::I, 'Q', 'G'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'E', 'M'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'V', 'Y'),
+            plugboard: None
+        };
+
+        assert_eq!(machine.process("POTATO"), "QTHYRQ");
     }
 
     #[test]
