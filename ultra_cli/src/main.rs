@@ -127,19 +127,19 @@ fn main() {
 
     // TODO validate plugboard config contains only letters
 
-    println!("Rotors (Walzen):");
+    println!("Rotor choices/order (Walzenlage):");
     println!("\tLeft:");
     println!("\t\tConfiguration: {}", machine.rotors.left.configuration);
-    println!("\t\tStarting position: {}", machine.rotors.left.starting_position);
-    println!("\t\tRing setting: {}", machine.rotors.left.ring_setting);
+    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.left.starting_position);
+    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.left.ring_setting);
     println!("\tMiddle:");
     println!("\t\tConfiguration: {}", machine.rotors.middle.configuration);
-    println!("\t\tStarting position: {}", machine.rotors.middle.starting_position);
-    println!("\t\tRing setting: {}", machine.rotors.middle.ring_setting);
+    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.middle.starting_position);
+    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.middle.ring_setting);
     println!("\tRight:");
     println!("\t\tConfiguration: {}", machine.rotors.right.configuration);
-    println!("\t\tStarting position: {}", machine.rotors.right.starting_position);
-    println!("\t\tRing setting: {}", machine.rotors.right.ring_setting);
+    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.right.starting_position);
+    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.right.ring_setting);
     println!("Reflector (Umkehrwalze):");
     println!("\tConfiguration: {}", machine.reflector.configuration);
     println!("Plugboard (Steckerbrett):");
