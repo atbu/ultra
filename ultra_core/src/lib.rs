@@ -1,3 +1,5 @@
+use std::ascii::AsciiExt;
+
 /// Converts a character to a zero-based index related to its position in the alphabet, where 'A'
 /// equals 0, 'B' equals 1, ..., 'Z' equals 25.
 pub fn char_to_index(char: char) -> u8 {
@@ -100,6 +102,15 @@ impl EnigmaMachine {
         // We know that the output won't be any longer/shorter than the input as letters are
         // translated 1:1.
         let mut output = String::with_capacity(message.len());
+
+        if message.is_empty() {
+            panic!("Plaintext cannot be empty.");
+        }
+
+        // Check if all characters are uppercase letters. If not, panic.
+        if !message.chars().all(|x| x.is_ascii_uppercase()) {
+            panic!("Plaintext must consist only of uppercase letters.");
+        }
 
         for character in message.chars() {
             output.push(self.press_key(character));
