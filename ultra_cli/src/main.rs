@@ -129,32 +129,7 @@ fn main() {
     machine.rotors.middle.validate("Middle");
     machine.rotors.right.validate("Right");
 
-    println!("Rotor choices/order (Walzenlage):");
-    println!("\tLeft:");
-    println!("\t\tConfiguration: {}", machine.rotors.left.configuration);
-    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.left.starting_position);
-    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.left.ring_setting);
-    println!("\tMiddle:");
-    println!("\t\tConfiguration: {}", machine.rotors.middle.configuration);
-    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.middle.starting_position);
-    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.middle.ring_setting);
-    println!("\tRight:");
-    println!("\t\tConfiguration: {}", machine.rotors.right.configuration);
-    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.right.starting_position);
-    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.right.ring_setting);
-    println!("Reflector (Umkehrwalze):");
-    println!("\tConfiguration: {}", machine.reflector.configuration);
-    println!("Plugboard (Steckerbrett):");
-
-    if plugboard_pairs.len() > 0 {
-        for pair in plugboard_pairs {
-            println!("\t- {} <-> {}", pair.0, pair.1);
-        }
-    } else {
-        println!("\tNot configured.");
-    }
-
-    println!();
+    print_machine_configuration(&machine, &plugboard_pairs);
 
     let mut enigma_machine: EnigmaMachine = EnigmaMachine {
         left_rotor: Rotor::new(left_rotor_config, machine.rotors.left.starting_position, machine.rotors.left.ring_setting),
@@ -174,4 +149,33 @@ fn read_machine_configuration(path: &str) -> MachineConfig {
     let config: MachineConfig = toml::from_str(&content).unwrap();
 
     config
+}
+
+fn print_machine_configuration(machine: &MachineConfig, plugboard_pairs: &Vec<(char, char)>) {
+    println!("Rotor choices/order (Walzenlage):");
+    println!("\tLeft:");
+    println!("\t\tConfiguration: {}", machine.rotors.left.configuration);
+    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.left.starting_position);
+    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.left.ring_setting);
+    println!("\tMiddle:");
+    println!("\t\tConfiguration: {}", machine.rotors.middle.configuration);
+    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.middle.starting_position);
+    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.middle.ring_setting);
+    println!("\tRight:");
+    println!("\t\tConfiguration: {}", machine.rotors.right.configuration);
+    println!("\t\tStarting position (Grundstellung): {}", machine.rotors.right.starting_position);
+    println!("\t\tRing setting (Ringstellung): {}", machine.rotors.right.ring_setting);
+    println!("Reflector (Umkehrwalze):");
+    println!("\tConfiguration: {}", machine.reflector.configuration);
+    println!("Plugboard (Steckerbrett):");
+
+    if !plugboard_pairs.is_empty() {
+        for pair in plugboard_pairs {
+            println!("\t- {} <-> {}", pair.0, pair.1);
+        }
+    } else {
+        println!("\tNot configured.");
+    }
+
+    println!();
 }
