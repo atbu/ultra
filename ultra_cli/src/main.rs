@@ -89,41 +89,13 @@ fn main() {
         }
     }
 
-    let left_rotor_config = match machine.rotors.left.configuration.as_str() {
-        "I" => RotorConfiguration::I,
-        "II" => RotorConfiguration::II,
-        "III" => RotorConfiguration::III,
-        "IV" => RotorConfiguration::IV,
-        "V" => RotorConfiguration::V,
-        _ => panic!("Unrecognised left rotor configuration: {}", machine.rotors.left.configuration)
-    };
+    let (
+        left_rotor_config,
+        middle_rotor_config,
+        right_rotor_config
+    ) = validate_rotor_configuration_strings(&machine);
 
-    let middle_rotor_config = match machine.rotors.middle.configuration.as_str() {
-        "I" => RotorConfiguration::I,
-        "II" => RotorConfiguration::II,
-        "III" => RotorConfiguration::III,
-        "IV" => RotorConfiguration::IV,
-        "V" => RotorConfiguration::V,
-        _ => panic!("Unrecognised middle rotor configuration: {}", machine.rotors.middle.configuration)
-    };
-
-    let right_rotor_config = match machine.rotors.right.configuration.as_str() {
-        "I" => RotorConfiguration::I,
-        "II" => RotorConfiguration::II,
-        "III" => RotorConfiguration::III,
-        "IV" => RotorConfiguration::IV,
-        "V" => RotorConfiguration::V,
-        _ => panic!("Unrecognised right rotor configuration: {}", machine.rotors.right.configuration)
-    };
-
-    let reflector_config = match machine.reflector.configuration {
-        'A' => ReflectorConfiguration::A,
-        'B' => ReflectorConfiguration::B,
-        'C' => ReflectorConfiguration::C,
-        _ => panic!("Unrecognised reflector configuration: {}", machine.reflector.configuration)
-    };
-
-    // TODO could probably also accept numeric positions
+    let reflector_config = validate_reflector_config_string(&machine);
 
     machine.rotors.left.validate("Left");
     machine.rotors.middle.validate("Middle");
@@ -141,6 +113,46 @@ fn main() {
 
     if let Some(input) = cli.input.as_deref() {
         println!("{}", enigma_machine.process(input));
+    }
+}
+
+fn validate_rotor_configuration_strings(machine: &MachineConfig) -> (RotorConfiguration, RotorConfiguration, RotorConfiguration) {
+    let left = match machine.rotors.left.configuration.as_str() {
+        "I" => RotorConfiguration::I,
+        "II" => RotorConfiguration::II,
+        "III" => RotorConfiguration::III,
+        "IV" => RotorConfiguration::IV,
+        "V" => RotorConfiguration::V,
+        _ => panic!("Unrecognised left rotor configuration: {}", machine.rotors.left.configuration)
+    };
+
+    let middle = match machine.rotors.middle.configuration.as_str() {
+        "I" => RotorConfiguration::I,
+        "II" => RotorConfiguration::II,
+        "III" => RotorConfiguration::III,
+        "IV" => RotorConfiguration::IV,
+        "V" => RotorConfiguration::V,
+        _ => panic!("Unrecognised middle rotor configuration: {}", machine.rotors.middle.configuration)
+    };
+
+    let right = match machine.rotors.right.configuration.as_str() {
+        "I" => RotorConfiguration::I,
+        "II" => RotorConfiguration::II,
+        "III" => RotorConfiguration::III,
+        "IV" => RotorConfiguration::IV,
+        "V" => RotorConfiguration::V,
+        _ => panic!("Unrecognised right rotor configuration: {}", machine.rotors.right.configuration)
+    };
+
+    (left, middle, right)
+}
+
+fn validate_reflector_config_string(machine: &MachineConfig) -> ReflectorConfiguration {
+    match machine.reflector.configuration {
+        'A' => ReflectorConfiguration::A,
+        'B' => ReflectorConfiguration::B,
+        'C' => ReflectorConfiguration::C,
+        _ => panic!("Unrecognised reflector configuration: {}", machine.reflector.configuration)
     }
 }
 
