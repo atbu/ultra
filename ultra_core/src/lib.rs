@@ -405,6 +405,19 @@ mod tests {
     }
 
     #[test]
+    fn random_test_case_2() {
+        let mut machine = EnigmaMachine {
+            left_rotor: Rotor::new(RotorConfiguration::III, 'K', 'B'),
+            middle_rotor: Rotor::new(RotorConfiguration::III, 'E', 'T'),
+            right_rotor: Rotor::new(RotorConfiguration::V, 'C', 'H'),
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            plugboard: Plugboard::new("ACPQUHYFWRMJOSKTDIVG")
+        };
+
+        assert_eq!(machine.process("EEBXZZEBZXNXLBLBBZNLZBLNLNBBNBLLNBXNEZLB"), "BPNAFCWSDBGAFDIQPKGHXNFMXIGIKLXPKTPORWOX");
+    }
+
+    #[test]
     fn test_char_to_index() {
         assert_eq!(char_to_index('A'), 0);
         assert_eq!(char_to_index('B'), 1);
