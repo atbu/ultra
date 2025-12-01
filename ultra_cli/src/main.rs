@@ -25,6 +25,26 @@ struct RotorConfig {
     ring_setting: char
 }
 
+impl RotorConfig {
+    fn validate(&mut self, name: &str) {
+        if self.starting_position.is_ascii_alphabetic() {
+            if !self.starting_position.is_ascii_uppercase() {
+                self.starting_position = self.starting_position.to_ascii_uppercase();
+            }
+        } else {
+            panic!("{} rotor starting position must be a letter.", name);
+        }
+
+        if self.ring_setting.is_ascii_alphabetic() {
+            if !self.ring_setting.is_ascii_uppercase() {
+                self.ring_setting = self.ring_setting.to_ascii_uppercase();
+            }
+        } else {
+            panic!("{} rotor ring setting must be a letter.", name);
+        }
+    }
+}
+
 #[derive(Deserialize)]
 struct ReflectorConfig {
     configuration: char
@@ -52,14 +72,18 @@ fn main() {
         None => panic!("Machine configuration file not found.")
     };
 
-    let machine = read_machine_configuration(config_path.to_str().unwrap());
+    let mut machine = read_machine_configuration(config_path.to_str().unwrap());
 
     let mut plugboard_pairs: Vec<(char, char)> = Vec::new();
 
     if !machine.plugboard.configuration.is_empty() {
+        if !machine.plugboard.configuration.chars().all(|x| x.is_ascii()) {
+            panic!("Plugboard configuration must only contain letters.")
+        }
+
         for i in (0..(machine.plugboard.configuration.len() - 1)).step_by(2) {
-            let x = machine.plugboard.configuration.as_bytes()[i] as char;
-            let y = machine.plugboard.configuration.as_bytes()[i + 1] as char;
+            let x = machine.plugboard.configuration.as_bytes()[i].to_ascii_uppercase() as char;
+            let y = machine.plugboard.configuration.as_bytes()[i + 1].to_ascii_uppercase() as char;
 
             plugboard_pairs.push((x, y));
         }
@@ -100,32 +124,10 @@ fn main() {
     };
 
     // TODO could probably also accept numeric positions
-    if !machine.rotors.left.starting_position.is_ascii_alphabetic() {
-        panic!("Left rotor starting position must be a letter.");
-    }
 
-    if !machine.rotors.middle.starting_position.is_ascii_alphabetic() {
-        panic!("Middle rotor starting position must be a letter.");
-    }
-
-    if !machine.rotors.right.starting_position.is_ascii_alphabetic() {
-        panic!("Right rotor starting position must be a letter.");
-    }
-
-    // TODO could probably also accept numeric positions
-    if !machine.rotors.left.ring_setting.is_ascii_alphabetic() {
-        panic!("Left rotor ring setting must be a letter.");
-    }
-
-    if !machine.rotors.middle.ring_setting.is_ascii_alphabetic() {
-        panic!("Middle rotor ring setting must be a letter.");
-    }
-
-    if !machine.rotors.right.ring_setting.is_ascii_alphabetic() {
-        panic!("Right rotor ring setting must be a letter.");
-    }
-
-    // TODO validate plugboard config contains only letters
+    machine.rotors.left.validate("Left");
+    machine.rotors.middle.validate("Middle");
+    machine.rotors.right.validate("Right");
 
     println!("Rotor choices/order (Walzenlage):");
     println!("\tLeft:");
