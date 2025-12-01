@@ -1,5 +1,3 @@
-use std::ascii::AsciiExt;
-
 /// Converts a character to a zero-based index related to its position in the alphabet, where 'A'
 /// equals 0, 'B' equals 1, ..., 'Z' equals 25.
 pub fn char_to_index(char: char) -> u8 {
