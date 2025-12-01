@@ -65,20 +65,17 @@ impl EnigmaMachine {
     }
 
     fn rotate_rotors(&mut self) {
-        // Checks double stepping functionality of middle rotor.
-        let middle_rotor_should_rotate = self.right_rotor.position == self.right_rotor.notch
-            || self.right_rotor.position == self.right_rotor.notch + 1;
+        let middle_in_notch = self.middle_rotor.position == self.middle_rotor.notch;
+        let right_in_notch = self.right_rotor.position == self.right_rotor.notch;
 
-        let left_rotor_should_rotate = self.middle_rotor.position == self.middle_rotor.notch;
+        self.right_rotor.rotate();
 
-        self.right_rotor.rotate(); // right rotor always rotates
-
-        if middle_rotor_should_rotate {
-            self.middle_rotor.rotate();
+        if middle_in_notch {
+            self.left_rotor.rotate();
         }
 
-        if left_rotor_should_rotate {
-            self.left_rotor.rotate();
+        if middle_in_notch || right_in_notch {
+            self.middle_rotor.rotate();
         }
     }
 
@@ -392,6 +389,19 @@ mod tests {
         };
 
         assert_eq!(machine.process("HELLOWORLD"), "CDKSEVMKXJ");
+    }
+
+    #[test]
+    fn random_test_case_1() {
+        let mut machine = EnigmaMachine {
+            left_rotor: Rotor::new(RotorConfiguration::II, 'F', 'D'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'P', 'W'),
+            right_rotor: Rotor::new(RotorConfiguration::II, 'K', 'L'),
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            plugboard: Plugboard::new("JWYLFKREVPXTHOBCMQZG")
+        };
+
+        assert_eq!(machine.process("UISDNUUINSNASIAASNUUIDIADIADDDNNNS"), "LNLCJPIFILXIKZPROFOZATVGWZUWOFBFVB");
     }
 
     #[test]
