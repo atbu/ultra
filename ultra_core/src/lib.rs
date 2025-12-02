@@ -1,18 +1,18 @@
 /// Converts a character to a zero-based index related to its position in the alphabet, where 'A'
 /// equals 0, 'B' equals 1, ..., 'Z' equals 25.
-pub fn char_to_index(char: char) -> u8 {
+fn char_to_index(char: char) -> u8 {
     char as u8 - 65
 }
 
 /// Converts a zero-based index into a character, where 0 equals 'A', 1 equals 'B', ..., 25 equals
 /// 'Z'.
-pub fn index_to_char(index: u8) -> char {
+fn index_to_char(index: u8) -> char {
     (index + 65) as char
 }
 
 /// Converts a wiring string, e.g. `"EKMFLGDQVZNTOWYHXUSPAIBRCJ"` to an array of its character
 /// indexes, like `[4, 10, 12, ...]`.
-pub fn wiring_string_to_array(wiring_string: &str) -> [u8; 26] {
+fn wiring_string_to_array(wiring_string: &str) -> [u8; 26] {
     let mut wiring: [u8; 26] = [0; 26];
 
     for (index, character) in wiring_string.chars().enumerate() {
@@ -22,7 +22,7 @@ pub fn wiring_string_to_array(wiring_string: &str) -> [u8; 26] {
     wiring
 }
 
-pub fn inverse_wiring_array(wiring_array: [u8; 26]) -> [u8; 26] {
+fn inverse_wiring_array(wiring_array: [u8; 26]) -> [u8; 26] {
     let mut inverted: [u8; 26] = [0; 26];
 
     for (original_index, &original_value) in wiring_array.iter().enumerate() {
