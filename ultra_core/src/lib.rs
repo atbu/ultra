@@ -22,6 +22,8 @@ fn wiring_string_to_array(wiring_string: &str) -> [u8; 26] {
     wiring
 }
 
+/// Converts a wiring string, e.g. `"EKMFLGDQVZNTOWYHXUSPAIBRCJ"` to an array of its character
+/// indexes, like `[4, 10, 12, ...]`.
 fn inverse_wiring_array(wiring_array: [u8; 26]) -> [u8; 26] {
     let mut inverted: [u8; 26] = [0; 26];
 
