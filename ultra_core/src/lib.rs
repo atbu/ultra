@@ -218,7 +218,7 @@ pub struct Plugboard {
 }
 
 impl Plugboard {
-    /// This constructor returns an Option<Self> because there is the potential that if the string
+    /// This constructor returns an `Option<Self>` because there is the potential that if the string
     /// is empty, we will consider the machine to have no plugboard.
     /// The plugboard configuration is passed as a string like "ABCDEFGH" where A will be paired
     /// with B, C will be paired with D, E will be paired with F and G will be paired with H.
