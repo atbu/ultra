@@ -67,16 +67,13 @@ impl EnigmaMachine {
     }
 
     fn rotate_rotors(&mut self) {
-        let middle_in_notch = self.middle_rotor.position == self.middle_rotor.notch;
-        let right_in_notch = self.right_rotor.position == self.right_rotor.notch;
-
         self.right_rotor.rotate();
 
-        if middle_in_notch {
+        if self.middle_rotor.is_in_notch() {
             self.left_rotor.rotate();
         }
 
-        if middle_in_notch || right_in_notch {
+        if self.middle_rotor.is_in_notch() || self.right_rotor.is_in_notch() {
             self.middle_rotor.rotate();
         }
     }
@@ -182,6 +179,10 @@ impl Rotor {
         let signal_out = ((contact_out + 26) - delta) % 26;
 
         signal_out
+    }
+
+    fn is_in_notch(&self) -> bool {
+        self.position == self.notch
     }
 }
 
