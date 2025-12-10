@@ -58,15 +58,15 @@ impl EnigmaMachine {
 
         self.rotate_rotors();
 
-        signal = self.right_rotor.map_signal(signal);
-        signal = self.middle_rotor.map_signal(signal);
-        signal = self.left_rotor.map_signal(signal);
+        signal = self.right_rotor.map_signal(signal, false);
+        signal = self.middle_rotor.map_signal(signal, false);
+        signal = self.left_rotor.map_signal(signal, false);
 
         signal = self.reflector.map_signal(signal);
 
-        signal = self.left_rotor.map_signal_inverse(signal);
-        signal = self.middle_rotor.map_signal_inverse(signal);
-        signal = self.right_rotor.map_signal_inverse(signal);
+        signal = self.left_rotor.map_signal(signal, true);
+        signal = self.middle_rotor.map_signal(signal, true);
+        signal = self.right_rotor.map_signal(signal, true);
 
         signal = self.map_through_plugboard(signal);
 
@@ -190,23 +190,17 @@ impl Rotor {
         self.position = (self.position + 1) % 26
     }
 
-    // TODO: Roll the two below functions into one, using a boolean to dictate whether to use the standard or inverse wiring array.
-
     /// Maps a signal through a single Rotor, taking into account the rotation of the rotor.
     /// https://en.wikipedia.org/wiki/Enigma_rotor_details#Rotor_offset
-    fn map_signal(&self, signal: u8) -> u8 {
+    /// If the `inverse` Boolean parameter is true, the inverse wiring array is used (for return
+    /// runs through the rotor set). If it is not, the standard wiring array is used.
+    fn map_signal(&self, signal: u8, inverse: bool) -> u8 {
         let delta = ((self.position + 26) - self.ring_setting) % 26;
         let contact_in = (signal + delta) % 26;
-        let contact_out = self.wiring[contact_in as usize];
-        let signal_out = ((contact_out + 26) - delta) % 26;
-
-        signal_out
-    }
-
-    fn map_signal_inverse(&self, signal: u8) -> u8 {
-        let delta = ((self.position + 26) - self.ring_setting) % 26;
-        let contact_in = (signal + delta) % 26;
-        let contact_out = self.inverse_wiring[contact_in as usize];
+        let contact_out = match inverse {
+            false => self.wiring[contact_in as usize],
+            true => self.inverse_wiring[contact_in as usize]
+        };
         let signal_out = ((contact_out + 26) - delta) % 26;
 
         signal_out
