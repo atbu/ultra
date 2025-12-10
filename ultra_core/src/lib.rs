@@ -34,11 +34,18 @@ fn inverse_wiring_array(wiring_array: [u8; 26]) -> [u8; 26] {
     inverted
 }
 
+/// Represents an Enigma machine (currently only an Enigma I although other models might become
+/// supported in the future).
 pub struct EnigmaMachine {
+    /// The rotor in the left-hand slot of the machine.
     pub left_rotor: Rotor,
+    /// The rotor in the middle slot of the machine.
     pub middle_rotor: Rotor,
+    /// The rotor in the right-hand slot of the machine.
     pub right_rotor: Rotor,
+    /// The machine's reflector.
     pub reflector: Reflector,
+    /// The machine's plugboard configuration (if configured).
     pub plugboard: Option<Plugboard>
 }
 
@@ -66,6 +73,7 @@ impl EnigmaMachine {
         index_to_char(signal)
     }
 
+    /// Rotates the rotors to the next state.
     fn rotate_rotors(&mut self) {
         let middle_in_notch = self.middle_rotor.position == self.middle_rotor.notch;
         let right_in_notch = self.right_rotor.position == self.right_rotor.notch;
@@ -81,6 +89,7 @@ impl EnigmaMachine {
         }
     }
 
+    /// Map a single character through the plugboard to its matching character (if any).
     fn map_through_plugboard(&self, signal: u8) -> u8 {
         // If we have a plugboard, map the signal through it.
         // If not, let the signal pass through as it is.
@@ -90,14 +99,16 @@ impl EnigmaMachine {
         }
     }
 
-    // Used in tests but shows as dead code, so override compiler warnings.
-    #[allow(dead_code)]
+    /// Set the rotors to the positions specified by parameters.
+    #[allow(dead_code)] // Used in tests but shows as dead code, so override compiler warnings.
     fn update_rotor_positions(&mut self, left_rotor: char, middle_rotor: char, right_rotor: char) {
         self.left_rotor.position = char_to_index(left_rotor);
         self.middle_rotor.position = char_to_index(middle_rotor);
         self.right_rotor.position = char_to_index(right_rotor);
     }
 
+    /// Take a message as a string, process each character individually using this Enigma machine
+    /// and return the output.
     pub fn process(&mut self, message: &str) -> String {
         // We know that the output won't be any longer/shorter than the input as letters are
         // translated 1:1.
@@ -120,14 +131,24 @@ impl EnigmaMachine {
     }
 }
 
+/// Represents a single Rotor in an Enigma machine.
 pub struct Rotor {
+    /// This rotor's mappings - i.e. if this wiring array was `[3, 7, 12, 8, 5]` then this would
+    /// indicate that the character `A` maps through this rotor to the character `D`, that the
+    /// character `B` maps to the character `H` and so on.
     wiring: [u8; 26],
+    /// This rotor's inverse mappings, i.e. the wiring array with its indexes and values swapped.
     inverse_wiring: [u8; 26],
+    /// This rotor's notch position, i.e. the position at which it will cause the next rotor to
+    /// rotate.
     notch: u8,
+    /// This rotor's current position.
     position: u8,
+    /// This rotor's current ring setting, i.e. its wiring offset.
     ring_setting: u8
 }
 
+/// Represents the five standard rotor configurations of an Enigma I.
 pub enum RotorConfiguration {
     I,
     II,
@@ -137,7 +158,10 @@ pub enum RotorConfiguration {
 }
 
 impl Rotor {
+    /// Constructs a Rotor. Planning to add custom rotor configurations rather than having to use
+    /// the enum to use one of the five standard variants.
     pub fn new(rotor_configuration: RotorConfiguration, starting_position: char, ring_setting: char) -> Self {
+        // Map the RotorConfiguration enum value to the actual wiring string and notch position.
         let (wiring_string, notch) = match rotor_configuration {
             RotorConfiguration::I => ("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q'),
             RotorConfiguration::II => ("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E'),
@@ -150,6 +174,8 @@ impl Rotor {
 
         Self {
             wiring,
+            // Store the reversed variant of the wiring array so it can be used in processing
+            // without having to calculate on the fly each time.
             inverse_wiring: inverse_wiring_array(wiring),
             notch: char_to_index(notch),
             position: char_to_index(starting_position),
@@ -163,6 +189,8 @@ impl Rotor {
     fn rotate(&mut self) {
         self.position = (self.position + 1) % 26
     }
+
+    // TODO: Roll the two below functions into one, using a boolean to dictate whether to use the standard or inverse wiring array.
 
     /// Maps a signal through a single Rotor, taking into account the rotation of the rotor.
     /// https://en.wikipedia.org/wiki/Enigma_rotor_details#Rotor_offset
@@ -185,18 +213,24 @@ impl Rotor {
     }
 }
 
+/// Represents a reflector in an Enigma machine.
+pub struct Reflector {
+    /// The mapping of the reflector, representing what each character leaves the reflector as.
+    wiring: [u8; 26]
+}
+
+/// Represents the three standard reflector configurations of an Enigma I.
 pub enum ReflectorConfiguration {
     A,
     B,
     C
 }
 
-pub struct Reflector {
-    wiring: [u8; 26]
-}
-
 impl Reflector {
+    /// Constructs a Reflector. Planning to add custom reflector configurations rather than having
+    /// to use the enum to use one of the three standard variants.
     pub fn new(reflector_configuration: ReflectorConfiguration) -> Self {
+        // Map the ReflectorConfiguration enum value to the actual wiring string.
         let wiring_string = match reflector_configuration {
             ReflectorConfiguration::A => "EJMZALYXVBWFCRQUONTSPIKHGD",
             ReflectorConfiguration::B => "YRUHQSLDPXNGOKMIEBFZCWVJAT",
@@ -208,11 +242,16 @@ impl Reflector {
         }
     }
 
+    /// Maps a signal through the reflector, returning the index of the character as it leaves
+    /// the reflector.
     fn map_signal(&self, signal: u8) -> u8 {
         self.wiring[signal as usize]
     }
 }
 
+/// Represents the plugboard of an Enigma machine. Contains a `Vector` of `(u8, u8)` tuples.
+/// The two `u8` values in the tuple correspond to the pairing of letters on a plugboard.
+/// A tuple of `(3, 8)` means that an `D` would leave the plugboard as `I` and vice versa.
 pub struct Plugboard {
     configuration: Vec<(u8, u8)>
 }
@@ -235,6 +274,8 @@ impl Plugboard {
             panic!("Plugboard configuration has an invalid connection: {} is not connected to any other character.", invalid_connection);
         }
 
+        // Convert the plugboard string to a `Vec<(u8, u8)>` as explained in the documentation
+        // of the Plugboard struct.
         let mut plugboard_pairs: Vec<(u8, u8)> = Vec::new();
         for i in (0..(plugboard_string.len() - 1)).step_by(2) {
             let x = char_to_index(plugboard_string.as_bytes()[i] as char);

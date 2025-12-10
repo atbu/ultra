@@ -49,3 +49,9 @@ order, i.e. left to right.
 paired letter).
 6. Finally, the signal goes to the lamps in the centre of the machine. The lamp for the letter corresponding to the
 signal will light up.
+
+## Implementation details
+
+Within the code, characters are represented as `u8`-typed values (unsigned 8-bit integers). This makes calculating
+offsets much easier. They are translated from `char` to `u8` at the start of an operation, then back to `char` at the
+end to be displayed to the user.
