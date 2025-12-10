@@ -34,8 +34,7 @@ fn inverse_wiring_array(wiring_array: [u8; 26]) -> [u8; 26] {
     inverted
 }
 
-/// Represents an Enigma machine (currently only an Enigma I although other models might become
-/// supported in the future).
+/// Represents an Enigma machine.
 pub struct EnigmaMachine {
     /// The rotor in the left-hand slot of the machine.
     pub left_rotor: Rotor,
@@ -148,15 +147,6 @@ pub struct Rotor {
     ring_setting: u8
 }
 
-/// Represents the five standard rotor configurations of an Enigma I.
-pub enum RotorConfiguration {
-    I,
-    II,
-    III,
-    IV,
-    V
-}
-
 impl Rotor {
     /// Constructs a Rotor. Planning to add custom rotor configurations rather than having to use
     /// the enum to use one of the five standard variants.
@@ -205,6 +195,15 @@ impl Rotor {
 
         signal_out
     }
+}
+
+/// Represents the five standard rotor configurations of an Enigma I.
+pub enum RotorConfiguration {
+    I,
+    II,
+    III,
+    IV,
+    V
 }
 
 /// Represents a reflector in an Enigma machine.
