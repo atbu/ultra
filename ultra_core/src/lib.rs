@@ -74,8 +74,8 @@ impl EnigmaMachine {
 
     /// Rotates the rotors to the next state.
     fn rotate_rotors(&mut self) {
-        let middle_in_notch = self.middle_rotor.position == self.middle_rotor.notch;
-        let right_in_notch = self.right_rotor.position == self.right_rotor.notch;
+        let middle_in_notch = self.middle_rotor.notches.contains(&self.middle_rotor.position);
+        let right_in_notch = self.right_rotor.notches.contains(&self.right_rotor.position);
 
         self.right_rotor.rotate();
 
@@ -140,7 +140,7 @@ pub struct Rotor {
     inverse_wiring: [u8; 26],
     /// This rotor's notch position, i.e. the position at which it will cause the next rotor to
     /// rotate.
-    notch: u8,
+    notches: Vec<u8>,
     /// This rotor's current position.
     position: u8,
     /// This rotor's current ring setting, i.e. its wiring offset.
@@ -152,22 +152,30 @@ impl Rotor {
     /// the enum to use one of the five standard variants.
     pub fn new(rotor_configuration: RotorConfiguration, starting_position: char, ring_setting: char) -> Self {
         // Map the RotorConfiguration enum value to the actual wiring string and notch position.
-        let (wiring_string, notch) = match rotor_configuration {
-            RotorConfiguration::I => ("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q'),
-            RotorConfiguration::II => ("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E'),
-            RotorConfiguration::III => ("BDFHJLCPRTXVZNYEIWGAKMUSQO", 'V'),
-            RotorConfiguration::IV => ("ESOVPZJAYQUIRHXLNFTGKDCMWB", 'J'),
-            RotorConfiguration::V => ("VZBRGITYUPSDNHLXAWMJQOFECK", 'Z')
+        let (wiring_string, notches_chars) = match rotor_configuration {
+            RotorConfiguration::I => ("EKMFLGDQVZNTOWYHXUSPAIBRCJ", vec!['Q']),
+            RotorConfiguration::II => ("AJDKSIRUXBLHWTMCQGZNPYFVOE", vec!['E']),
+            RotorConfiguration::III => ("BDFHJLCPRTXVZNYEIWGAKMUSQO", vec!['V']),
+            RotorConfiguration::IV => ("ESOVPZJAYQUIRHXLNFTGKDCMWB", vec!['J']),
+            RotorConfiguration::V => ("VZBRGITYUPSDNHLXAWMJQOFECK", vec!['Z']),
+            RotorConfiguration::VI => ("JPGVOUMFYQBENHZRDKASXLICTW", vec!['Z', 'M']),
+            RotorConfiguration::VII => ("NZJHGRCXMYSWBOUFAIVLPEKQDT", vec!['Z', 'M']),
+            RotorConfiguration::VIII => ("FKQHTLXOCBJSPDZRAMEWNIUYGV", vec!['Z', 'M'])
         };
 
         let wiring: [u8; 26] = wiring_string_to_array(wiring_string);
+
+        let mut notches_indexes: Vec<u8> = Vec::new();
+        for notch_char in notches_chars {
+            notches_indexes.push(char_to_index(notch_char));
+        }
 
         Self {
             wiring,
             // Store the reversed variant of the wiring array so it can be used in processing
             // without having to calculate on the fly each time.
             inverse_wiring: inverse_wiring_array(wiring),
-            notch: char_to_index(notch),
+            notches: notches_indexes,
             position: char_to_index(starting_position),
             ring_setting: char_to_index(ring_setting)
         }
@@ -203,7 +211,10 @@ pub enum RotorConfiguration {
     II,
     III,
     IV,
-    V
+    V,
+    VI,
+    VII,
+    VIII
 }
 
 /// Represents a reflector in an Enigma machine.
