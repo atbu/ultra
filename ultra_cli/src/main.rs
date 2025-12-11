@@ -123,6 +123,9 @@ fn validate_rotor_configuration_strings(machine: &MachineConfig) -> (RotorConfig
         "III" => RotorConfiguration::III,
         "IV" => RotorConfiguration::IV,
         "V" => RotorConfiguration::V,
+        "VI" => RotorConfiguration::VI,
+        "VII" => RotorConfiguration::VII,
+        "VIII" => RotorConfiguration::VIII,
         _ => panic!("Unrecognised left rotor configuration: {}", machine.rotors.left.configuration)
     };
 
@@ -132,6 +135,9 @@ fn validate_rotor_configuration_strings(machine: &MachineConfig) -> (RotorConfig
         "III" => RotorConfiguration::III,
         "IV" => RotorConfiguration::IV,
         "V" => RotorConfiguration::V,
+        "VI" => RotorConfiguration::VI,
+        "VII" => RotorConfiguration::VII,
+        "VIII" => RotorConfiguration::VIII,
         _ => panic!("Unrecognised middle rotor configuration: {}", machine.rotors.middle.configuration)
     };
 
@@ -141,6 +147,9 @@ fn validate_rotor_configuration_strings(machine: &MachineConfig) -> (RotorConfig
         "III" => RotorConfiguration::III,
         "IV" => RotorConfiguration::IV,
         "V" => RotorConfiguration::V,
+        "VI" => RotorConfiguration::VI,
+        "VII" => RotorConfiguration::VII,
+        "VIII" => RotorConfiguration::VIII,
         _ => panic!("Unrecognised right rotor configuration: {}", machine.rotors.right.configuration)
     };
 
