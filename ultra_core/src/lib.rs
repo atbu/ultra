@@ -474,6 +474,36 @@ mod tests {
     }
 
     #[test]
+    fn test_rotor_multiple_turnovers() {
+        let mut machine = EnigmaMachine {
+            left_rotor: Rotor::new(RotorConfiguration::II, 'K', 'B'),
+            middle_rotor: Rotor::new(RotorConfiguration::III, 'E', 'T'),
+            right_rotor: Rotor::new(RotorConfiguration::VI, 'Z', 'H'),
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            plugboard: None
+        };
+
+        assert_eq!(machine.right_rotor.position, 25); // Z, not yet turned over
+        assert_eq!(machine.middle_rotor.position, 4); // E, not yet turned over
+
+        // Right rotor is currently in Z position so should turn over on next rotation.
+        machine.press_key('A');
+
+        assert_eq!(machine.right_rotor.position, 0); // A, has turned over
+        assert_eq!(machine.middle_rotor.position, 5); // F, has turned over because right rotor was at notch
+
+        machine.update_rotor_positions('K', 'F', 'M');
+
+        assert_eq!(machine.right_rotor.position, 12); // M, not yet turned over
+        assert_eq!(machine.middle_rotor.position, 5); // F, not yet turned over
+
+        machine.press_key('A');
+
+        assert_eq!(machine.right_rotor.position, 13); // N, has turned over
+        assert_eq!(machine.middle_rotor.position, 6); // F, has turned over because right rotor was at notch
+    }
+
+    #[test]
     fn test_char_to_index() {
         assert_eq!(char_to_index('A'), 0);
         assert_eq!(char_to_index('B'), 1);
