@@ -165,9 +165,17 @@ fn validate_reflector_config_string(machine: &MachineConfig) -> ReflectorConfigu
     }
 }
 
+// TODO should probably return Result type
 fn read_machine_configuration(path: &str) -> MachineConfig {
-    let content = std::fs::read_to_string(path).unwrap();
-    let config: MachineConfig = toml::from_str(&content).unwrap();
+    let content = match std::fs::read_to_string(path) {
+        Ok(content) => content,
+        Err(e) => panic!("Failed to read machine configuration file: {}", e)
+    };
+
+    let config = match toml::from_str::<MachineConfig>(&content) {
+        Ok(config) => config,
+        Err(e) => panic!("Failed to parse machine configuration: {}", e)
+    };
 
     config
 }
