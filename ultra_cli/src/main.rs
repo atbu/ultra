@@ -60,7 +60,7 @@ struct CLI {
     #[arg(short, long, value_name = "INPUT")]
     input: Option<String>,
 
-    #[arg(short, long, value_name = "CONFIG", default_value = "MachineConfiguration.toml")]
+    #[arg(short, long, value_name = "CONFIG", default_value = "machine.toml")]
     config: Option<PathBuf>
 }
 
