@@ -217,6 +217,61 @@ pub enum RotorConfiguration {
     VIII
 }
 
+// TODO: Did fourth rotor have ring settings? Investigate...
+pub struct FourthRotor {
+    /// This rotor's mappings - i.e. if this wiring array was `[3, 7, 12, 8, 5]` then this would
+    /// indicate that the character `A` maps through this rotor to the character `D`, that the
+    /// character `B` maps to the character `H` and so on.
+    wiring: [u8; 26],
+    /// This rotor's inverse mappings, i.e. the wiring array with its indexes and values swapped.
+    inverse_wiring: [u8; 26],
+    /// This rotor's current position.
+    position: u8
+}
+
+impl FourthRotor {
+    /// Constructs a Rotor. Planning to add custom rotor configurations rather than having to use
+    /// the enum to use one of the five standard variants.
+    pub fn new(rotor_configuration: FourthRotorConfiguration, starting_position: char) -> Self {
+        // Map the RotorConfiguration enum value to the actual wiring string and notch position.
+        let wiring_string = match rotor_configuration {
+            FourthRotorConfiguration::Beta => "LEYJVCNIXWPBQMDRTAKZGFUHOS",
+            FourthRotorConfiguration::Gamma => "FSOKANUERHMBTIYCWLQPZXVGJD"
+        };
+
+        let wiring: [u8; 26] = wiring_string_to_array(wiring_string);
+
+        Self {
+            wiring,
+            // Store the reversed variant of the wiring array so it can be used in processing
+            // without having to calculate on the fly each time.
+            inverse_wiring: inverse_wiring_array(wiring),
+            position: char_to_index(starting_position),
+        }
+    }
+
+    /// Maps a signal through a single Rotor, taking into account the rotation of the rotor.
+    /// https://en.wikipedia.org/wiki/Enigma_rotor_details#Rotor_offset
+    /// If the `inverse` Boolean parameter is true, the inverse wiring array is used (for return
+    /// runs through the rotor set). If it is not, the standard wiring array is used.
+    fn map_signal(&self, signal: u8, inverse: bool) -> u8 {
+        let contact_in = (signal + self.position) % 26;
+        let contact_out = match inverse {
+            false => self.wiring[contact_in as usize],
+            true => self.inverse_wiring[contact_in as usize]
+        };
+        let signal_out = ((contact_out + 26) - self.position) % 26;
+
+        signal_out
+    }
+}
+
+/// Represents the three standard reflector configurations of an Enigma I.
+pub enum FourthRotorConfiguration {
+    Beta,
+    Gamma
+}
+
 /// Represents a reflector in an Enigma machine.
 pub struct Reflector {
     /// The mapping of the reflector, representing what each character leaves the reflector as.
