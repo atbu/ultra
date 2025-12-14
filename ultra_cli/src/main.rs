@@ -107,6 +107,7 @@ fn main() {
         left_rotor: Rotor::new(left_rotor_config, machine.rotors.left.starting_position, machine.rotors.left.ring_setting),
         middle_rotor: Rotor::new(middle_rotor_config, machine.rotors.middle.starting_position, machine.rotors.middle.ring_setting),
         right_rotor: Rotor::new(right_rotor_config, machine.rotors.right.starting_position, machine.rotors.right.ring_setting),
+        fourth_rotor: None,
         reflector: Reflector::new(reflector_config),
         plugboard: Plugboard::new(&machine.plugboard.configuration)
     };

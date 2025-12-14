@@ -42,6 +42,8 @@ pub struct EnigmaMachine {
     pub middle_rotor: Rotor,
     /// The rotor in the right-hand slot of the machine.
     pub right_rotor: Rotor,
+    /// The fourth rotor at the far left of the machine, between the reflector and the left rotor.
+    pub fourth_rotor: Option<FourthRotor>,
     /// The machine's reflector.
     pub reflector: Reflector,
     /// The machine's plugboard configuration (if configured).
@@ -60,9 +62,11 @@ impl EnigmaMachine {
         signal = self.right_rotor.map_signal(signal, false);
         signal = self.middle_rotor.map_signal(signal, false);
         signal = self.left_rotor.map_signal(signal, false);
+        signal = self.map_through_fourth_rotor(signal, false);
 
         signal = self.reflector.map_signal(signal);
 
+        signal = self.map_through_fourth_rotor(signal, true);
         signal = self.left_rotor.map_signal(signal, true);
         signal = self.middle_rotor.map_signal(signal, true);
         signal = self.right_rotor.map_signal(signal, true);
@@ -94,6 +98,16 @@ impl EnigmaMachine {
         // If not, let the signal pass through as it is.
         match &self.plugboard {
             Some(plugboard) => plugboard.map_signal(signal),
+            None => signal
+        }
+    }
+
+    /// Map a single character through the fourth rotor to its matching character (if any).
+    fn map_through_fourth_rotor(&self, signal: u8, inverse: bool) -> u8 {
+        // If we have a fourth rotor, map the signal through it.
+        // If not, let the signal pass through it as it is.
+        match &self.fourth_rotor {
+            Some(fourth_rotor) => fourth_rotor.map_signal(signal, inverse),
             None => signal
         }
     }
@@ -217,6 +231,63 @@ pub enum RotorConfiguration {
     VIII
 }
 
+// TODO: Did fourth rotor have ring settings? Investigate...
+pub struct FourthRotor {
+    /// This rotor's mappings - i.e. if this wiring array was `[3, 7, 12, 8, 5]` then this would
+    /// indicate that the character `A` maps through this rotor to the character `D`, that the
+    /// character `B` maps to the character `H` and so on.
+    wiring: [u8; 26],
+    /// This rotor's inverse mappings, i.e. the wiring array with its indexes and values swapped.
+    inverse_wiring: [u8; 26],
+    /// This rotor's current position.
+    position: u8
+}
+
+impl FourthRotor {
+    /// Constructs a Rotor. Planning to add custom rotor configurations rather than having to use
+    /// the enum to use one of the five standard variants.
+    pub fn new(rotor_configuration: FourthRotorConfiguration, starting_position: char) -> Option<Self> {
+        // Map the RotorConfiguration enum value to the actual wiring string and notch position.
+        let wiring_string = match rotor_configuration {
+            FourthRotorConfiguration::Beta => "LEYJVCNIXWPBQMDRTAKZGFUHOS",
+            FourthRotorConfiguration::Gamma => "FSOKANUERHMBTIYCWLQPZXVGJD"
+        };
+
+        let wiring: [u8; 26] = wiring_string_to_array(wiring_string);
+
+        Some(
+            Self {
+                wiring,
+                // Store the reversed variant of the wiring array so it can be used in processing
+                // without having to calculate on the fly each time.
+                inverse_wiring: inverse_wiring_array(wiring),
+                position: char_to_index(starting_position),
+            }
+        )
+    }
+
+    /// Maps a signal through a single Rotor, taking into account the rotation of the rotor.
+    /// https://en.wikipedia.org/wiki/Enigma_rotor_details#Rotor_offset
+    /// If the `inverse` Boolean parameter is true, the inverse wiring array is used (for return
+    /// runs through the rotor set). If it is not, the standard wiring array is used.
+    fn map_signal(&self, signal: u8, inverse: bool) -> u8 {
+        let contact_in = (signal + self.position) % 26;
+        let contact_out = match inverse {
+            false => self.wiring[contact_in as usize],
+            true => self.inverse_wiring[contact_in as usize]
+        };
+        let signal_out = ((contact_out + 26) - self.position) % 26;
+
+        signal_out
+    }
+}
+
+/// Represents the three standard reflector configurations of an Enigma I.
+pub enum FourthRotorConfiguration {
+    Beta,
+    Gamma
+}
+
 /// Represents a reflector in an Enigma machine.
 pub struct Reflector {
     /// The mapping of the reflector, representing what each character leaves the reflector as.
@@ -227,7 +298,10 @@ pub struct Reflector {
 pub enum ReflectorConfiguration {
     A,
     B,
-    C
+    C,
+    // Both of the below configurations are used in Enigma M4.
+    NarrowB,
+    NarrowC
 }
 
 impl Reflector {
@@ -238,7 +312,9 @@ impl Reflector {
         let wiring_string = match reflector_configuration {
             ReflectorConfiguration::A => "EJMZALYXVBWFCRQUONTSPIKHGD",
             ReflectorConfiguration::B => "YRUHQSLDPXNGOKMIEBFZCWVJAT",
-            ReflectorConfiguration::C => "FVPJIAOYEDRZXWGCTKUQSBNMHL"
+            ReflectorConfiguration::C => "FVPJIAOYEDRZXWGCTKUQSBNMHL",
+            ReflectorConfiguration::NarrowB => "ENKQAUYWJICOPBLMDXZVFTHRGS",
+            ReflectorConfiguration::NarrowC => "RDOBJNTKVEHMLFCWZAXGYIPSUQ"
         };
 
         Self {
@@ -325,6 +401,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'A'),
+            fourth_rotor: None,
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: None
         };
@@ -339,6 +416,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'M', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'C', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'K', 'A'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -356,6 +434,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'K', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'O', 'A'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -373,6 +452,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'U', 'A'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -386,6 +466,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'Z', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'Z', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'Z', 'A'),
+            fourth_rotor: None,
             plugboard: Plugboard::new("ABCDEFGH")
         };
 
@@ -399,6 +480,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::IV, 'B', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::V, 'L', 'A'),
+            fourth_rotor: None,
             plugboard: Plugboard::new("BQCRDIEJKWMTOSPXUZGH")
         };
 
@@ -415,6 +497,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'B'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'B'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'B'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -428,6 +511,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'K', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'T', 'B'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -441,6 +525,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'G', 'R'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'U', 'T'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'M', 'M'),
+            fourth_rotor: None,
             plugboard: Plugboard::new("AKSORILP")
         };
 
@@ -453,6 +538,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::II, 'F', 'D'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'P', 'W'),
             right_rotor: Rotor::new(RotorConfiguration::II, 'K', 'L'),
+            fourth_rotor: None,
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: Plugboard::new("JWYLFKREVPXTHOBCMQZG")
         };
@@ -466,6 +552,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::III, 'K', 'B'),
             middle_rotor: Rotor::new(RotorConfiguration::III, 'E', 'T'),
             right_rotor: Rotor::new(RotorConfiguration::V, 'C', 'H'),
+            fourth_rotor: None,
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: Plugboard::new("ACPQUHYFWRMJOSKTDIVG")
         };
@@ -479,6 +566,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::II, 'K', 'B'),
             middle_rotor: Rotor::new(RotorConfiguration::III, 'E', 'T'),
             right_rotor: Rotor::new(RotorConfiguration::VI, 'Z', 'H'),
+            fourth_rotor: None,
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: None
         };
@@ -501,6 +589,31 @@ mod tests {
 
         assert_eq!(machine.right_rotor.position, 13); // N, has turned over
         assert_eq!(machine.middle_rotor.position, 6); // F, has turned over because right rotor was at notch
+    }
+
+    // I could probably find a better name for this test but it does the job for now...
+    #[test]
+    fn test_original_ukw_b_and_narrow_ukw_b_and_beta_equivalency() {
+        let mut enigma_i = EnigmaMachine {
+            left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'A'),
+            fourth_rotor: None,
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            plugboard: None
+        };
+
+        let mut enigma_m4 = EnigmaMachine {
+            left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'A'),
+            fourth_rotor: FourthRotor::new(FourthRotorConfiguration::Beta, 'A'),
+            reflector: Reflector::new(ReflectorConfiguration::NarrowB),
+            plugboard: None
+        };
+
+        // The Enigma I and Enigma M4 here should give the same output.
+        assert_eq!(enigma_i.process("ABCDEFG"), enigma_m4.process("ABCDEFG"));
     }
 
     #[test]
