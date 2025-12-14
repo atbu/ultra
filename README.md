@@ -6,8 +6,11 @@ Named after the designation given by 🇬🇧 British military intelligence to w
 breaking encrypted enemy communications.
 Click [here](https://en.wikipedia.org/wiki/Ultra_(cryptography)) for more information.
 
-In its current state, the project simulates an **Enigma I** machine used by the German Armed Forces (Wehrmacht) during
-the Second World War.
+In its current state, the project can simulate both **Enigma I** and **Enigma M3** machines used by the German Armed
+Forces (Wehrmacht) during the Second World War.
+
+Most information regarding the operation/design of Enigma machines was sourced from
+https://www.cryptomuseum.com/crypto/enigma/i/index.htm and https://www.cryptomuseum.com/crypto/enigma/working.htm.
 
 The primary components of the machine are:
  - Rotors
