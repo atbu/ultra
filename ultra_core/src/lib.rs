@@ -589,6 +589,31 @@ mod tests {
         assert_eq!(machine.middle_rotor.position, 6); // F, has turned over because right rotor was at notch
     }
 
+    // I could probably find a better name for this test but it does the job for now...
+    #[test]
+    fn test_original_ukw_b_and_narrow_ukw_b_and_beta_equivalency() {
+        let mut enigma_i = EnigmaMachine {
+            left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'A'),
+            fourth_rotor: None,
+            reflector: Reflector::new(ReflectorConfiguration::B),
+            plugboard: None
+        };
+
+        let mut enigma_m4 = EnigmaMachine {
+            left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
+            middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
+            right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'A'),
+            fourth_rotor: Some(FourthRotor::new(FourthRotorConfiguration::Beta, 'A')),
+            reflector: Reflector::new(ReflectorConfiguration::NarrowB),
+            plugboard: None
+        };
+
+        // The Enigma I and Enigma M4 here should give the same output.
+        assert_eq!(enigma_i.process("ABCDEFG"), enigma_m4.process("ABCDEFG"));
+    }
+
     #[test]
     fn test_char_to_index() {
         assert_eq!(char_to_index('A'), 0);
