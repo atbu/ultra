@@ -1,3 +1,3 @@
 [workspace]
-members = ["ultra_cli","ultra_core"]
+members = ["ultra_core"]
 resolver = "3"
