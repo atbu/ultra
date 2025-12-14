@@ -246,7 +246,7 @@ pub struct FourthRotor {
 impl FourthRotor {
     /// Constructs a Rotor. Planning to add custom rotor configurations rather than having to use
     /// the enum to use one of the five standard variants.
-    pub fn new(rotor_configuration: FourthRotorConfiguration, starting_position: char) -> Self {
+    pub fn new(rotor_configuration: FourthRotorConfiguration, starting_position: char) -> Option<Self> {
         // Map the RotorConfiguration enum value to the actual wiring string and notch position.
         let wiring_string = match rotor_configuration {
             FourthRotorConfiguration::Beta => "LEYJVCNIXWPBQMDRTAKZGFUHOS",
@@ -255,13 +255,15 @@ impl FourthRotor {
 
         let wiring: [u8; 26] = wiring_string_to_array(wiring_string);
 
-        Self {
-            wiring,
-            // Store the reversed variant of the wiring array so it can be used in processing
-            // without having to calculate on the fly each time.
-            inverse_wiring: inverse_wiring_array(wiring),
-            position: char_to_index(starting_position),
-        }
+        Some(
+            Self {
+                wiring,
+                // Store the reversed variant of the wiring array so it can be used in processing
+                // without having to calculate on the fly each time.
+                inverse_wiring: inverse_wiring_array(wiring),
+                position: char_to_index(starting_position),
+            }
+        )
     }
 
     /// Maps a signal through a single Rotor, taking into account the rotation of the rotor.
@@ -605,7 +607,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'A'),
-            fourth_rotor: Some(FourthRotor::new(FourthRotorConfiguration::Beta, 'A')),
+            fourth_rotor: FourthRotor::new(FourthRotorConfiguration::Beta, 'A'),
             reflector: Reflector::new(ReflectorConfiguration::NarrowB),
             plugboard: None
         };
