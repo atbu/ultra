@@ -227,7 +227,10 @@ pub struct Reflector {
 pub enum ReflectorConfiguration {
     A,
     B,
-    C
+    C,
+    // Both of the below configurations are used in Enigma M4.
+    NarrowB,
+    NarrowC
 }
 
 impl Reflector {
@@ -238,7 +241,9 @@ impl Reflector {
         let wiring_string = match reflector_configuration {
             ReflectorConfiguration::A => "EJMZALYXVBWFCRQUONTSPIKHGD",
             ReflectorConfiguration::B => "YRUHQSLDPXNGOKMIEBFZCWVJAT",
-            ReflectorConfiguration::C => "FVPJIAOYEDRZXWGCTKUQSBNMHL"
+            ReflectorConfiguration::C => "FVPJIAOYEDRZXWGCTKUQSBNMHL",
+            ReflectorConfiguration::NarrowB => "ENKQAUYWJICOPBLMDXZVFTHRGS",
+            ReflectorConfiguration::NarrowC => "RDOBJNTKVEHMLFCWZAXGYIPSUQ"
         };
 
         Self {
