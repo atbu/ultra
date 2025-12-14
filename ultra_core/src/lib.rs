@@ -42,6 +42,8 @@ pub struct EnigmaMachine {
     pub middle_rotor: Rotor,
     /// The rotor in the right-hand slot of the machine.
     pub right_rotor: Rotor,
+    /// The fourth rotor at the far left of the machine, between the reflector and the left rotor.
+    pub fourth_rotor: Option<FourthRotor>,
     /// The machine's reflector.
     pub reflector: Reflector,
     /// The machine's plugboard configuration (if configured).
@@ -60,9 +62,11 @@ impl EnigmaMachine {
         signal = self.right_rotor.map_signal(signal, false);
         signal = self.middle_rotor.map_signal(signal, false);
         signal = self.left_rotor.map_signal(signal, false);
+        signal = self.map_through_fourth_rotor(signal, false);
 
         signal = self.reflector.map_signal(signal);
 
+        signal = self.map_through_fourth_rotor(signal, true);
         signal = self.left_rotor.map_signal(signal, true);
         signal = self.middle_rotor.map_signal(signal, true);
         signal = self.right_rotor.map_signal(signal, true);
@@ -94,6 +98,16 @@ impl EnigmaMachine {
         // If not, let the signal pass through as it is.
         match &self.plugboard {
             Some(plugboard) => plugboard.map_signal(signal),
+            None => signal
+        }
+    }
+
+    /// Map a single character through the fourth rotor to its matching character (if any).
+    fn map_through_fourth_rotor(&self, signal: u8, inverse: bool) -> u8 {
+        // If we have a fourth rotor, map the signal through it.
+        // If not, let the signal pass through it as it is.
+        match &self.fourth_rotor {
+            Some(fourth_rotor) => fourth_rotor.map_signal(signal, inverse),
             None => signal
         }
     }
@@ -385,6 +399,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'A'),
+            fourth_rotor: None,
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: None
         };
@@ -399,6 +414,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'M', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'C', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'K', 'A'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -416,6 +432,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'K', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'O', 'A'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -433,6 +450,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'U', 'A'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -446,6 +464,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'Z', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'Z', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'Z', 'A'),
+            fourth_rotor: None,
             plugboard: Plugboard::new("ABCDEFGH")
         };
 
@@ -459,6 +478,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::II, 'A', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::IV, 'B', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::V, 'L', 'A'),
+            fourth_rotor: None,
             plugboard: Plugboard::new("BQCRDIEJKWMTOSPXUZGH")
         };
 
@@ -475,6 +495,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'A', 'B'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'A', 'B'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'A', 'B'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -488,6 +509,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'K', 'A'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'D', 'A'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'T', 'B'),
+            fourth_rotor: None,
             plugboard: None
         };
 
@@ -501,6 +523,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::I, 'G', 'R'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'U', 'T'),
             right_rotor: Rotor::new(RotorConfiguration::III, 'M', 'M'),
+            fourth_rotor: None,
             plugboard: Plugboard::new("AKSORILP")
         };
 
@@ -513,6 +536,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::II, 'F', 'D'),
             middle_rotor: Rotor::new(RotorConfiguration::II, 'P', 'W'),
             right_rotor: Rotor::new(RotorConfiguration::II, 'K', 'L'),
+            fourth_rotor: None,
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: Plugboard::new("JWYLFKREVPXTHOBCMQZG")
         };
@@ -526,6 +550,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::III, 'K', 'B'),
             middle_rotor: Rotor::new(RotorConfiguration::III, 'E', 'T'),
             right_rotor: Rotor::new(RotorConfiguration::V, 'C', 'H'),
+            fourth_rotor: None,
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: Plugboard::new("ACPQUHYFWRMJOSKTDIVG")
         };
@@ -539,6 +564,7 @@ mod tests {
             left_rotor: Rotor::new(RotorConfiguration::II, 'K', 'B'),
             middle_rotor: Rotor::new(RotorConfiguration::III, 'E', 'T'),
             right_rotor: Rotor::new(RotorConfiguration::VI, 'Z', 'H'),
+            fourth_rotor: None,
             reflector: Reflector::new(ReflectorConfiguration::B),
             plugboard: None
         };
