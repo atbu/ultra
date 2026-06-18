@@ -38,3 +38,7 @@ func New(configuration ReflectorConfiguration) *Reflector {
 		conversion.ConvertWiringStringToArray(wiringString),
 	}
 }
+
+func (r *Reflector) MapSignal(signal int) int {
+	return r.Wiring[signal]
+}
