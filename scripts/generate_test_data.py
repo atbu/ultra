@@ -27,7 +27,7 @@ for i in range(20):
 plugboard_configuration = f"createPlugboard(t, \"{plugboard_configuration}\")"
 
 plaintext = ""
-for i in range(random.randint(10,50)):
+for i in range(random.randint(10,50)):-
     plaintext += random.choice(alphabet)
 
 print("func Test(t *testing.T) {")
