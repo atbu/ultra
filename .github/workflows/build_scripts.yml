@@ -1,0 +1,26 @@
+name: Build scripts folder
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout scripts folder
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: 'scripts'
+          sparse-checkout-cone-mode: 'false'
+          path: '.'
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run generate_test_data.py
+        run: python generate_test_data.py
