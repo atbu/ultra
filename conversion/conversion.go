@@ -3,7 +3,7 @@ package conversion
 const ASCIIValueOfA = 65
 
 func ConvertCharToIndex(char rune) int {
-	return int(char + ASCIIValueOfA)
+	return int(char - ASCIIValueOfA)
 }
 
 func ConvertIndexToChar(index int) rune {
