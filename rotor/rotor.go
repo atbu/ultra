@@ -94,3 +94,23 @@ func NewRotor(configuration RotorConfiguration, startingPosition rune, ringSetti
 		convertCharToIndex(ringSetting),
 	}
 }
+
+func (r *Rotor) Rotate() {
+	r.Position = (r.Position + 1) % 26
+}
+
+func (r *Rotor) MapSignal(signal int, inverse bool) int {
+	delta := ((r.Position + 26) - r.RingSetting) % 26
+	contactIn := (signal + delta) % 26
+
+	var contactOut int
+	if inverse {
+		contactOut = r.InverseWiring[contactIn]
+	} else {
+		contactOut = r.Wiring[contactIn]
+	}
+
+	signalOut := ((contactOut + 26) - delta) % 26
+
+	return signalOut
+}
