@@ -31,3 +31,18 @@ func NewFourthRotor(configuration FourthRotorConfiguration, startingPosition run
 		convertCharToIndex(startingPosition),
 	}
 }
+
+func (fr *FourthRotor) MapSignal(signal int, inverse bool) int {
+	contactIn := (signal + fr.Position) % 26
+
+	var contactOut int
+	if inverse {
+		contactOut = fr.InverseWiring[contactIn]
+	} else {
+		contactOut = fr.Wiring[contactIn]
+	}
+
+	signalOut := ((contactOut + 26) - fr.Position) % 26
+
+	return signalOut
+}
