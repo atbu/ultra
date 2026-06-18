@@ -1,5 +1,7 @@
 name: Build scripts folder
 on:
+  push:
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
