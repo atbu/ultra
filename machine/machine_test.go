@@ -31,9 +31,7 @@ func TestSanityCheck(t *testing.T) {
 		nil,
 	}
 
-	input := "AAAAA"
-	expectedOutput := "BDZGO"
-	runTest(t, machine, input, expectedOutput)
+	runTest(t, machine, "AAAAA", "BDZGO")
 }
 
 func TestReciprocity(t *testing.T) {
@@ -46,13 +44,26 @@ func TestReciprocity(t *testing.T) {
 		nil,
 	}
 
-	input := "ENIGMA"
-	expectedOutput := "QMJIDO"
-	runTest(t, machine, input, expectedOutput)
+	runTest(t, machine, "ENIGMA", "QMJIDO")
 
 	machine.updateRotorPositions('M', 'C', 'K')
 
-	input = "AAAAA"
-	expectedOutput = "YWDVQ"
-	runTest(t, machine, input, expectedOutput)
+	runTest(t, machine, "AAAAA", "YWDVQ")
+}
+
+func TestNormalTurnover(t *testing.T) {
+	machine := &Machine{
+		rotor.NewRotor(rotor.RotorI, 'K', 'A'),
+		rotor.NewRotor(rotor.RotorII, 'D', 'A'),
+		rotor.NewRotor(rotor.RotorIII, 'O', 'A'),
+		nil,
+		reflector.New(reflector.ReflectorB),
+		nil,
+	}
+
+	runTest(t, machine, "AAAAA", "JWZBJ")
+
+	machine.updateRotorPositions('K', 'D', 'U')
+
+	runTest(t, machine, "AAAAA", "YWDVQ")
 }
