@@ -1,5 +1,7 @@
 package rotor
 
+import "github.com/atbu/ultra/conversion"
+
 type FourthRotorConfiguration int
 
 const (
@@ -23,12 +25,12 @@ func NewFourthRotor(configuration FourthRotorConfiguration, startingPosition run
 		wiringString = "FSOKANUERHMBTIYCWLQPZXVGJD"
 	}
 
-	wiring := convertWiringStringToArray(wiringString)
+	wiring := conversion.ConvertWiringStringToArray(wiringString)
 
 	return &FourthRotor{
 		wiring,
-		inverseWiringArray(wiring),
-		convertCharToIndex(startingPosition),
+		conversion.InverseWiringArray(wiring),
+		conversion.ConvertCharToIndex(startingPosition),
 	}
 }
 
