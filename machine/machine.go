@@ -10,11 +10,11 @@ import (
 )
 
 type Machine struct {
-	LeftRotor   rotor.Rotor
-	MiddleRotor rotor.Rotor
-	RightRotor  rotor.Rotor
+	LeftRotor   *rotor.Rotor
+	MiddleRotor *rotor.Rotor
+	RightRotor  *rotor.Rotor
 	FourthRotor *rotor.FourthRotor
-	Reflector   reflector.Reflector
+	Reflector   *reflector.Reflector
 	Plugboard   *plugboard.Plugboard
 }
 
