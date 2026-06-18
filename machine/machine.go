@@ -43,13 +43,16 @@ func (m *Machine) PressKey(key rune) rune {
 }
 
 func (m *Machine) RotateRotors() {
+	middleInNotch := m.MiddleRotor.IsInNotch()
+	rightInNotch := m.RightRotor.IsInNotch()
+
 	m.RightRotor.Rotate()
 
-	if m.MiddleRotor.IsInNotch() {
+	if middleInNotch {
 		m.LeftRotor.Rotate()
 	}
 
-	if m.MiddleRotor.IsInNotch() || m.RightRotor.IsInNotch() {
+	if middleInNotch || rightInNotch {
 		m.MiddleRotor.Rotate()
 	}
 }
