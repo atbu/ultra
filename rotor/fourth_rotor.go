@@ -5,8 +5,8 @@ import "github.com/atbu/ultra/conversion"
 type FourthRotorConfiguration int
 
 const (
-	Beta FourthRotorConfiguration = iota
-	Gamma
+	FourthRotorBeta FourthRotorConfiguration = iota
+	FourthRotorGamma
 )
 
 type FourthRotor struct {
@@ -19,9 +19,9 @@ func NewFourthRotor(configuration FourthRotorConfiguration, startingPosition run
 	var wiringString string
 
 	switch configuration {
-	case Beta:
+	case FourthRotorBeta:
 		wiringString = "LEYJVCNIXWPBQMDRTAKZGFUHOS"
-	case Gamma:
+	case FourthRotorGamma:
 		wiringString = "FSOKANUERHMBTIYCWLQPZXVGJD"
 	}
 
