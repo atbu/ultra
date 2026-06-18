@@ -1,6 +1,10 @@
 package rotor
 
-import "github.com/atbu/ultra/conversion"
+import (
+	"slices"
+
+	"github.com/atbu/ultra/conversion"
+)
 
 type RotorConfiguration int
 
@@ -89,4 +93,8 @@ func (r *Rotor) MapSignal(signal int, inverse bool) int {
 	signalOut := ((contactOut + 26) - delta) % 26
 
 	return signalOut
+}
+
+func (r *Rotor) IsInNotch() bool {
+	return slices.Contains(r.Notches, r.Position)
 }
