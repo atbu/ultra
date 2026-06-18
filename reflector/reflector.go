@@ -10,8 +10,8 @@ const (
 	ReflectorC
 
 	// The two below are used in Enigma M4.
-	ReflectorNarrowA
 	ReflectorNarrowB
+	ReflectorNarrowC
 )
 
 type Reflector struct {
@@ -28,9 +28,9 @@ func New(configuration ReflectorConfiguration) *Reflector {
 		wiringString = "YRUHQSLDPXNGOKMIEBFZCWVJAT"
 	case ReflectorC:
 		wiringString = "FVPJIAOYEDRZXWGCTKUQSBNMHL"
-	case ReflectorNarrowA:
-		wiringString = "ENKQAUYWJICOPBLMDXZVFTHRGS"
 	case ReflectorNarrowB:
+		wiringString = "ENKQAUYWJICOPBLMDXZVFTHRGS"
+	case ReflectorNarrowC:
 		wiringString = "RDOBJNTKVEHMLFCWZAXGYIPSUQ"
 	}
 
