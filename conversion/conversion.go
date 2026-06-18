@@ -6,6 +6,10 @@ func ConvertCharToIndex(char rune) int {
 	return int(char + ASCIIValueOfA)
 }
 
+func ConvertIndexToChar(index int) rune {
+	return rune(index + 65)
+}
+
 func ConvertWiringStringToArray(wiringString string) [26]int {
 	var wiring [26]int
 
