@@ -6,8 +6,8 @@ Named after the designation given by 🇬🇧 British military intelligence to w
 breaking encrypted enemy communications.
 Click [here](https://en.wikipedia.org/wiki/Ultra_(cryptography)) for more information.
 
-In its current state, the project can simulate both **Enigma I** and **Enigma M3** machines used by the German Armed
-Forces (Wehrmacht) during the Second World War.
+The project can simulate **Enigma I**, **Enigma M3** and **Enigma M4** machines used by the German Armed Forces
+(Wehrmacht) during the Second World War.
 
 Most information regarding the operation/design of Enigma machines was sourced from
 https://www.cryptomuseum.com/crypto/enigma/i/index.htm and https://www.cryptomuseum.com/crypto/enigma/working.htm.
@@ -24,8 +24,13 @@ The primary components of the machine are:
    - A strange concept called double stepping occurs where the middle rotor will rotate
    when the rightmost rotor has completed a full revolution, or if it has completed a full revolution itself, it will
    rotate once more.
-   - Enigma I has 3 rotor slots, although the Enigma M4 later used by the Kriegsmarine (German Navy) contained 4.
-   - Enigma operators usually had a choice of 5 rotors, numbered *I*, *II*, *III*, *IV* and *V*.
+   - Enigma I and Enigma M3 have three rotor slots, although the Enigma M4, later used by the Kriegsmarine (German
+   Navy), contains four.
+   - Enigma I operators usually had a choice of five rotors, numbered *I*, *II*, *III*, *IV* and *V*.
+   - Enigma M3 operators had three extra rotors to choose from, numbered *VI*, *VII* and *VIII*.
+   - Enigma M4 operators also had an extra two rotors which fitted into a fourth rotor slot between the reflector and
+   left rotor. The fourth rotors differ from other rotors in that they do not rotate and do not have any notches. They
+   are labelled *β (Beta)* and *γ (Gamma)*.
  - **Reflector**
    - Contains thirteen wires which pair letters together. For example, if B was electrically wired to U, a B entering
    the reflector would leave as a U and vice versa.
@@ -45,6 +50,7 @@ Operation of the machine:
 corresponding letter.
 3. The rotors would rotate _before_ any signal passes through them.
    - Rotor stepping is explained above, including _double stepping_.
+   - Enigma M4 'fourth rotors' do not rotate.
 4. The signal then passes through the rotors from right to left, being transformed at each step, until it reaches the
 reflector, at which point it is transformed into its paired letter. It then goes back through the rotors in reverse
 order, i.e. left to right.
@@ -55,6 +61,5 @@ signal will light up.
 
 ## Implementation details
 
-Within the code, characters are represented as `u8`-typed values (unsigned 8-bit integers). This makes calculating
-offsets much easier. They are translated from `char` to `u8` at the start of an operation, then back to `char` at the
-end to be displayed to the user.
+Within the code, characters are represented as `int`-typed values. This makes calculating offsets much easier. They are
+translated from `rune` to `int` at the start of an operation, then back to `int` at the end to be displayed to the user.
