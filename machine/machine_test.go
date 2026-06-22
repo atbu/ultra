@@ -156,6 +156,21 @@ func TestRingCase3(t *testing.T) {
 	runTest(t, machine, "HELLOWORLD", "CDKSEVMKXJ")
 }
 
+func TestProcessEmptyString(t *testing.T) {
+	// note: this machine configuration wouldn't be possible in real life because an operator would only
+	// have one of each rotor (as far as I know)
+	machine := &Machine{
+		rotor.NewRotor(rotor.RotorII, 'F', 'D'),
+		rotor.NewRotor(rotor.RotorII, 'P', 'W'),
+		rotor.NewRotor(rotor.RotorII, 'K', 'L'),
+		nil,
+		reflector.New(reflector.ReflectorB),
+		createPlugboard(t, "JWYLFKREVPXTHOBCMQZG"),
+	}
+
+	runTest(t, machine, "", "")
+}
+
 func TestRandomCase1(t *testing.T) {
 	// note: this machine configuration wouldn't be possible in real life because an operator would only
 	// have one of each rotor (as far as I know)
