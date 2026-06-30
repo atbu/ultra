@@ -7,6 +7,8 @@ import (
 	"github.com/atbu/ultra/conversion"
 )
 
+// todo to structure better
+
 func TestConstructor(t *testing.T) {
 	tests := []struct {
 		input          ReflectorConfiguration
