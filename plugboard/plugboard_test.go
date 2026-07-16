@@ -1,7 +1,6 @@
 package plugboard
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/atbu/ultra/conversion"
@@ -48,45 +47,33 @@ func TestUnevenPlugboardString(t *testing.T) {
 	}
 }
 
-func generatePlugboardPair(a rune, b rune) PlugboardPair {
-	return PlugboardPair{int(a - 65), int(b - 65)}
-}
-
 func TestPlugboardConstructor(t *testing.T) {
-	tests := []struct {
-		input          string
-		expectedOutput *Plugboard
-	}{
-		{"ABCD", &Plugboard{[]PlugboardPair{
-			generatePlugboardPair('A', 'B'),
-			generatePlugboardPair('C', 'D'),
-		}}},
-		{"RKWDPT", &Plugboard{[]PlugboardPair{
-			generatePlugboardPair('R', 'K'),
-			generatePlugboardPair('W', 'D'),
-			generatePlugboardPair('P', 'T'),
-		}}},
-		{"QPALZMWOXNEICBRUVFGH", &Plugboard{[]PlugboardPair{
-			generatePlugboardPair('Q', 'P'),
-			generatePlugboardPair('A', 'L'),
-			generatePlugboardPair('Z', 'M'),
-			generatePlugboardPair('W', 'O'),
-			generatePlugboardPair('X', 'N'),
-			generatePlugboardPair('E', 'I'),
-			generatePlugboardPair('C', 'B'),
-			generatePlugboardPair('R', 'U'),
-			generatePlugboardPair('V', 'F'),
-			generatePlugboardPair('G', 'H'),
-		}}},
+	tests := []string{
+		"ABCD",
+		"RKWDPT",
+		"QPALZMWOXNEICBRUVFGH",
 	}
 
-	for _, testData := range tests {
-		got, err := New(testData.input)
-		if !reflect.DeepEqual(got, testData.expectedOutput) {
-			t.Errorf("New() in plugboard package returned unexpected output - got=%v, expected=%v", got, testData.expectedOutput)
-		}
+	for _, input := range tests {
+		got, err := New(input)
 		if err != nil {
 			t.Errorf("New() in plugboard package returned unexpected error - got=%v, expected=%v", err, nil)
+		}
+
+		// Each pair in the plugboard is derived from two consecutive characters in the input string, so we can
+		// derive the expected pairs from the input rather than hand-listing them.
+		wantPairs := len(input) / 2
+		if len(got.Configuration) != wantPairs {
+			t.Errorf("New() in plugboard package returned unexpected number of pairs - got=%v, expected=%v", len(got.Configuration), wantPairs)
+			continue
+		}
+
+		for i, pair := range got.Configuration {
+			wantA := conversion.ConvertCharToIndex(rune(input[i*2]))
+			wantB := conversion.ConvertCharToIndex(rune(input[i*2+1]))
+			if pair.a != wantA || pair.b != wantB {
+				t.Errorf("New() in plugboard package returned unexpected pair at index %d - got=%v, expected=%v", i, pair, PlugboardPair{wantA, wantB})
+			}
 		}
 	}
 }
