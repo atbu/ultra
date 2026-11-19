@@ -63,3 +63,20 @@ signal will light up.
 
 Within the code, characters are represented as `int`-typed values. This makes calculating offsets much easier. They are
 translated from `rune` to `int` at the start of an operation, then back to `int` at the end to be displayed to the user.
+
+## Web UI
+
+The `web` folder contains a small static page that runs the simulator in the browser. `cmd/wasm` compiles the Go
+packages to WebAssembly, so the page uses the same engine as the tests.
+
+To build and serve it locally:
+
+```sh
+bash web/build.sh            # writes the site to ./dist
+python -m http.server 8000 --directory dist
+```
+
+Then open http://localhost:8000.
+
+The `Deploy web UI to GitHub Pages` workflow builds and publishes the site on every push to `main`. To turn it on, go
+to **Settings → Pages** in the repository and set **Source** to **GitHub Actions**.

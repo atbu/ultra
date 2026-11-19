@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ultra</title>
+  <meta name="description" content="An Enigma I, M3 and M4 simulator written in Go, running in the browser with WebAssembly.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='none' stroke='%23d1462f' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>ultra</h1>
+    <p>An Enigma machine simulator written in Go, compiled to WebAssembly.
+      <a href="https://github.com/atbu/ultra">Source</a></p>
+    <p id="engine-status" class="status">Loading…</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="machine-heading">
+      <div class="row">
+        <h2 id="machine-heading">Machine</h2>
+        <div class="tabs" role="radiogroup" aria-label="Enigma model" id="model-picker"></div>
+      </div>
+
+      <div class="rotors">
+        <label class="slot">
+          <span class="label">Reflector</span>
+          <select id="reflector"></select>
+        </label>
+        <div class="rotor-slots" id="rotor-slots"></div>
+      </div>
+
+      <div class="lampboard" id="lampboard" aria-live="polite"></div>
+      <div class="keyboard" id="keyboard"></div>
+    </section>
+
+    <section aria-labelledby="message-heading">
+      <div class="row">
+        <h2 id="message-heading">Message</h2>
+        <span class="muted" id="letter-count">0 letters</span>
+      </div>
+      <textarea id="input-text" rows="3" spellcheck="false" autocomplete="off"
+        placeholder="Type here, or use the keys above"></textarea>
+      <output id="output-text" class="output" for="input-text"></output>
+      <p class="error" id="error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="button" id="copy-output">Copy</button>
+        <button type="button" id="swap" title="Enigma is reciprocal: the same settings turn the output back into the input">Decrypt output</button>
+        <button type="button" id="clear">Clear</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="plug-heading">
+      <div class="row">
+        <h2 id="plug-heading">Plugboard</h2>
+        <span class="muted" id="pair-count">0 cables</span>
+      </div>
+      <div class="plugboard" id="plugboard"></div>
+      <div class="plug-text">
+        <input id="plug-input" type="text" spellcheck="false" autocomplete="off" aria-label="Plugboard pairs"
+          placeholder="Pairs, e.g. AV BS CG DL">
+        <button type="button" id="plug-clear">Unplug all</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="path-heading">
+      <div class="row">
+        <h2 id="path-heading">Signal path</h2>
+        <span class="muted"><span class="key-forward">—</span> in &nbsp;<span class="key-return">—</span> out</span>
+      </div>
+      <div class="path-scroll">
+        <svg id="path-svg" role="img" aria-labelledby="path-summary"></svg>
+      </div>
+      <p class="path-summary muted" id="path-summary"></p>
+    </section>
+  </main>
+
+  <script src="wasm_exec.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
