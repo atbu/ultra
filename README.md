@@ -44,7 +44,7 @@ The primary components of the machine are:
    - Usually up to 10 pairs would be configured. If a letter does not have a counterpart, it leaves the plugboard as
    itself.
 
-Operation of the machine:
+**Operation of the machine**:
 1. The operator presses a key.
 2. The signal first goes to the plugboard, which would transform the letter into another letter, if it had a
 corresponding letter.
